@@ -1,0 +1,69 @@
+<%- include('partials/head') %>
+<div class="shell">
+  <%- include('partials/nav') %>
+  <main class="main">
+    <h1>Buy coins</h1>
+    <p>Current balance: <strong style="color:var(--text)"><%= user.coins %> JC</strong></p>
+
+    <% if (flash) { %>
+      <div class="alert alert-<%= flash.type %>"><%= flash.message %></div>
+    <% } %>
+
+    <div class="step-label">1. Pick an amount</div>
+    <div class="package-grid" id="packageGrid">
+      <div class="package-card" data-jc="100" data-price="1.2"><div class="amount">100 JC</div><div class="unit">$1.2</div><div class="expiry">lasts <%= smallExpiryDays %> days</div></div>
+      <div class="package-card popular" data-jc="200" data-price="2.4"><div class="amount">200 JC</div><div class="unit">$2.4</div><div class="expiry">lasts <%= smallExpiryDays %> days</div></div>
+      <div class="package-card" data-jc="500" data-price="3.6"><div class="amount">500 JC</div><div class="unit">$3.6</div><div class="expiry">lasts <%= smallExpiryDays %> days</div></div>
+      <div class="package-card" data-jc="700" data-price="6"><div class="amount">700 JC</div><div class="unit">$6</div><div class="expiry">lasts <%= largeExpiryDays %> days</div></div>
+      <div class="package-card" data-jc="900" data-price="8"><div class="amount">900 JC</div><div class="unit">$8</div><div class="expiry">lasts <%= largeExpiryDays %> days</div></div>
+    </div>
+    <p style="font-size:12.5px;color:var(--text-faint);margin-top:-10px">Tap a package to select it, then follow the steps below. Coins are credited once we confirm your payment — see step 3.</p>
+
+    <div class="step-label">2. Send payment</div>
+    <div class="payment-card">
+      <strong><%= paymentLabel %></strong>
+      <div class="payment-number">
+        <span class="mono"><%= paymentNumber %></span>
+        <button class="copy-btn" id="copyPayBtn" type="button">Copy</button>
+      </div>
+      <ol class="pay-steps">
+        <li>Send your chosen amount to the number above via <%= paymentLabel %>.</li>
+        <li>Keep the confirmation / transaction reference.</li>
+      </ol>
+    </div>
+
+    <div class="step-label" style="margin-top:24px">3. Submit payment proof</div>
+    <div class="panel">
+      <p style="margin-bottom:14px">Email your payment confirmation to <strong style="color:var(--text)"><%= supportEmail %></strong> along with the email address you registered with. Coins are added to your account shortly after.</p>
+      <a href="mailto:<%= supportEmail %>?subject=<%= encodeURIComponent('JC top-up - ' + user.email) %>" class="btn btn-primary" style="max-width:260px" id="emailProofBtn">Email payment proof</a>
+    </div>
+  </main>
+</div>
+<script>
+  document.getElementById('copyPayBtn').addEventListener('click', function () {
+    navigator.clipboard.writeText(<%- JSON.stringify(paymentNumber) %>).then(function () {
+      var btn = document.getElementById('copyPayBtn');
+      var original = btn.textContent;
+      btn.textContent = 'Copied!';
+      setTimeout(function () { btn.textContent = original; }, 1500);
+    });
+  });
+
+  (function () {
+    var cards = document.querySelectorAll('.package-card');
+    var emailBtn = document.getElementById('emailProofBtn');
+    var supportEmail = <%- JSON.stringify(supportEmail) %>;
+    var userEmail = <%- JSON.stringify(user.email) %>;
+    cards.forEach(function (card) {
+      card.addEventListener('click', function () {
+        cards.forEach(function (c) { c.classList.remove('selected'); });
+        card.classList.add('selected');
+        var jc = card.getAttribute('data-jc');
+        var price = card.getAttribute('data-price');
+        var subject = 'JC top-up - ' + jc + ' JC ($' + price + ') - ' + userEmail;
+        emailBtn.href = 'mailto:' + supportEmail + '?subject=' + encodeURIComponent(subject);
+      });
+    });
+  })();
+</script>
+<%- include('partials/foot') %>

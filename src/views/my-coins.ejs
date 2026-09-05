@@ -1,0 +1,52 @@
+<%- include('partials/head') %>
+<div class="shell">
+  <%- include('partials/nav') %>
+  <main class="main">
+    <div class="welcome-eyebrow">JC System</div>
+    <h1>My Coins</h1>
+
+    <% if (flash) { %>
+      <div class="alert alert-<%= flash.type %>"><%= flash.message %></div>
+    <% } %>
+
+    <div class="header-row">
+      <span class="balance-chip">🪙 <%= user.coins %> JC balance</span>
+      <a href="/topup" class="btn btn-primary" style="width:auto;padding:9px 18px">Buy coins</a>
+    </div>
+
+    <% if (user.coins_expire_at) { %>
+      <div class="alert alert-<%= user.coins > 0 ? 'success' : 'error' %>">
+        <% if (user.coins > 0) { %>
+          Your balance is valid until <strong><%= new Date(Number(user.coins_expire_at)).toLocaleDateString() %></strong>. Any unused JC after that expires.
+        <% } else { %>
+          Your JC balance has expired. Buy more to keep deploying.
+        <% } %>
+      </div>
+    <% } %>
+
+    <div class="pill-row">
+      <div class="pill p-deploy"><div class="amount"><%= deployCost %> JC</div><div class="label">Deploy</div><div class="sub">per bot</div></div>
+      <div class="pill p-renew"><div class="amount"><%= renewalCost %> JC</div><div class="label">Renewal</div><div class="sub">every <%= renewalHours %>h</div></div>
+      <div class="pill p-referral"><div class="amount"><%= referralBonus %> JC</div><div class="label">Referral</div><div class="sub">per signup</div></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Free JC</div>
+      <p style="margin-bottom:14px">Claim <strong style="color:var(--text)"><%= freeClaimCoins %> JC</strong> for free every <%= freeClaimIntervalDays %> days — enough to cover one renewal while you wait to top up.</p>
+      <form method="POST" action="/my-coins/claim">
+        <button type="submit" class="btn btn-primary" style="width:auto;padding:9px 18px" <%= freeClaimReady ? '' : 'disabled' %>>
+          <%= freeClaimReady ? `Claim ${freeClaimCoins} JC` : `Available ${new Date(freeClaimEligibleAt).toLocaleDateString()}` %>
+        </button>
+      </form>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">How JC works</div>
+      <p style="margin-bottom:8px">Deploying any bot costs <strong style="color:var(--text)"><%= deployCost %> JC</strong> up front. After that, keeping it running costs <strong style="color:var(--text)"><%= renewalCost %> JC every <%= renewalHours %> hours</strong> — if your balance can't cover a renewal, that bot is paused (not deleted) until you top up and resume it from My Bots.</p>
+      <p style="margin-bottom:0">You've referred <strong style="color:var(--text)"><%= referralCount %></strong> people so far — grab your referral link from the Dashboard to invite more.</p>
+    </div>
+
+    <a href="/my-bots" class="btn btn-secondary" style="max-width:200px">View my bots</a>
+  </main>
+</div>
+<%- include('partials/foot') %>

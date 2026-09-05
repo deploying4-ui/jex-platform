@@ -1,0 +1,41 @@
+<%- include('partials/head') %>
+<div class="shell">
+  <%- include('partials/nav') %>
+  <main class="main">
+    <div class="status-hero" id="statusHero">
+      <div class="spinner" id="statusSpinner"></div>
+      <div>
+        <h1 style="margin-bottom:2px" id="statusHeading">Deploying <%= bot ? bot.name : deployment.bot_slug %></h1>
+        <p style="margin:0" id="statusSub"><span class="mono"><%= deployment.app_name %></span></p>
+      </div>
+    </div>
+
+    <% if (flash) { %>
+      <div class="alert alert-<%= flash.type %>"><%= flash.message %></div>
+    <% } %>
+
+    <div class="console" id="console">
+      <div class="console-line"><span class="t">[00:00]</span><span class="msg">Deploy started (id: <%= deployment.heroku_app_setup_id || 'n/a' %>)</span></div>
+      <div class="console-line"><span class="t">[00:01]</span><span class="msg">Building <%= deployment.app_name %><span class="console-cursor"></span></span></div>
+    </div>
+
+    <div id="statusActions" style="margin-top:20px;display:none" class="btn-row"></div>
+
+    <div class="panel" id="redeployPanel" style="margin-top:20px;<%= deployment.status === 'succeeded' ? '' : 'display:none' %>">
+      <div class="panel-title">Update session ID</div>
+      <p style="margin-bottom:14px">Session expired or changed? Update it here — the app restarts with the new value, no new deploy and no extra JC.</p>
+      <form method="POST" action="/deploy/status/<%= deployment.id %>/redeploy">
+        <div class="field">
+          <label for="session_id">New SESSION_ID</label>
+          <input type="text" id="session_id" name="session_id" class="mono-field" placeholder="Paste the new session string" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Update &amp; restart</button>
+      </form>
+    </div>
+
+    <a href="/my-bots" class="btn btn-secondary" style="max-width:200px">Manage in My Bots</a>
+  </main>
+</div>
+<script>window.DEPLOYMENT_ID = <%= deployment.id %>;</script>
+<script src="/js/deploy-status.js"></script>
+<%- include('partials/foot') %>

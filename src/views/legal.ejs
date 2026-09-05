@@ -1,0 +1,12 @@
+<%- include('partials/head') %>
+<div class="topbar">
+  <a href="/" class="brand" style="text-decoration:none"><span class="brand-mark">&gt;_</span><%= siteName %><span class="dot">.</span></a>
+</div>
+
+<div class="legal-page">
+  <h1><%= heading %></h1>
+  <p class="legal-updated">Last updated <%= updated %></p>
+  <%- include(bodyView) %>
+</div>
+
+<%- include('partials/foot') %>

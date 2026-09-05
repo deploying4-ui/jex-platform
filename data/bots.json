@@ -1,0 +1,54 @@
+[
+  {
+    "slug": "vesper-xmd",
+    "name": "Vesper-Xmd",
+    "tagline": "Multi-device WhatsApp bot",
+    "owner": "Kevintech-hub",
+    "repo": "Vesper-Xmd",
+    "branch": "main",
+    "initial": "V",
+    "accent": "coral",
+    "cssClass": "b1",
+    "costCoins": 10,
+    "sessionHelperUrl": ""
+  },
+  {
+    "slug": "jexploit-bot",
+    "name": "Jexploit Bot",
+    "tagline": "Multi-device WhatsApp bot",
+    "owner": "Kevintech-hub",
+    "repo": "Jexploit-Bot",
+    "branch": "main",
+    "initial": "J",
+    "accent": "teal",
+    "cssClass": "b2",
+    "costCoins": 10,
+    "sessionHelperUrl": ""
+  },
+  {
+    "slug": "nexus-v1md",
+    "name": "Nexus-1MD",
+    "tagline": "WhatsApp automation + userbot utility",
+    "owner": "devwhitewizard",
+    "repo": "nexus-v1md",
+    "branch": "main",
+    "initial": "N",
+    "accent": "violet",
+    "cssClass": "b3",
+    "costCoins": 10,
+    "sessionHelperUrl": "https://nexus-paircode-1.onrender.com/"
+  },
+  {
+    "slug": "malvin-xd",
+    "name": "Malvin-XD",
+    "tagline": "Advanced WhatsApp bot",
+    "owner": "XdKing2",
+    "repo": "MALVIN-XD",
+    "branch": "main",
+    "initial": "M",
+    "accent": "gold",
+    "cssClass": "b4",
+    "costCoins": 10,
+    "sessionHelperUrl": "https://starcore-pair.vercel.app/"
+  }
+]

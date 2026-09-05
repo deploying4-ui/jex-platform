@@ -1,0 +1,86 @@
+<%- include('partials/head') %>
+<div class="shell">
+  <%- include('partials/nav') %>
+  <main class="main">
+    <h1>Admin</h1>
+
+    <% if (flash) { %>
+      <div class="alert alert-<%= flash.type %>"><%= flash.message %></div>
+    <% } %>
+
+    <div class="panel">
+      <div class="panel-title">Infrastructure API key</div>
+      <p style="margin-bottom:14px">
+        <span class="badge <%= herokuKeyStatus.configured ? 'badge-succeeded' : 'badge-failed' %>"><%= herokuKeyStatus.configured ? 'Configured' : 'Not configured' %></span>
+        <% if (herokuKeyStatus.configured) { %>
+          — currently set via <%= herokuKeyStatus.source === 'database' ? 'a database override' : 'the config.js default' %>.
+        <% } %>
+      </p>
+      <form method="POST" action="/admin/heroku-key">
+        <div class="field" style="margin-bottom:10px">
+          <label for="heroku_api_key">New key</label>
+          <input type="text" id="heroku_api_key" name="heroku_api_key" class="mono-field" placeholder="Paste the new key">
+          <div class="hint">Saved to the database — takes effect immediately, no redeploy needed. Overrides the key baked into config.js.</div>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:auto;padding:9px 18px">Save key</button>
+      </form>
+    </div>
+
+    <h2 style="font-size:17px;margin-top:28px">Users</h2>
+    <p>Look up a user by email to view their account, adjust their JC balance, or change their admin access.</p>
+
+    <form method="GET" action="/admin" class="admin-search">
+      <input type="email" name="email" placeholder="user@example.com" value="<%= searchedEmail %>" required>
+      <button type="submit" class="btn btn-primary" style="width:auto;padding:11px 18px">Search</button>
+    </form>
+
+    <% if (searchedEmail && !lookup) { %>
+      <div class="alert alert-error">No user found with that email.</div>
+    <% } %>
+
+    <% if (lookup) { %>
+      <div class="panel admin-user-card">
+        <div class="panel-title">Account</div>
+        <div class="row"><span class="k">Email</span><span class="v"><%= lookup.email %></span></div>
+        <div class="row"><span class="k">Verified</span><span class="v"><%= lookup.verified ? 'Yes' : 'No' %></span></div>
+        <div class="row"><span class="k">Admin</span><span class="v"><%= lookup.is_admin ? 'Yes' : 'No' %></span></div>
+        <div class="row"><span class="k">JC balance</span><span class="v"><%= lookup.coins %></span></div>
+        <div class="row"><span class="k">Referrals</span><span class="v"><%= lookup.referralCount %></span></div>
+        <div class="row"><span class="k">Deployments</span><span class="v"><%= lookup.deployStats.total %> total · <%= lookup.deployStats.active %> active</span></div>
+        <div class="row"><span class="k">Joined</span><span class="v"><%= new Date(Number(lookup.created_at)).toLocaleDateString() %></span></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">Adjust JC balance</div>
+        <form method="POST" action="/admin/add-coins">
+          <input type="hidden" name="email" value="<%= lookup.email %>">
+          <div class="field">
+            <label for="amount">Amount (use a negative number to deduct)</label>
+            <input type="text" id="amount" name="amount" class="mono-field" placeholder="e.g. 200 or -50" required>
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label for="expiry">If crediting coins, extend expiry by</label>
+            <select id="expiry" name="expiry" style="width:100%;background:var(--bg-inset);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm);padding:11px 12px;font-size:14.5px;font-family:var(--font-body)">
+              <option value="none">Don't change expiry</option>
+              <option value="small">1 month (100 / 200 / 500 JC packages)</option>
+              <option value="large">2 months (700 / 900 JC packages)</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary" style="margin-top:16px">Update balance</button>
+        </form>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">Admin access</div>
+        <form method="POST" action="/admin/set-admin">
+          <input type="hidden" name="email" value="<%= lookup.email %>">
+          <input type="hidden" name="make_admin" value="<%= lookup.is_admin ? '0' : '1' %>">
+          <button type="submit" class="btn <%= lookup.is_admin ? 'btn-danger' : 'btn-primary' %>" style="width:auto;padding:9px 18px">
+            <%= lookup.is_admin ? 'Remove admin' : 'Make admin' %>
+          </button>
+        </form>
+      </div>
+    <% } %>
+  </main>
+</div>
+<%- include('partials/foot') %>

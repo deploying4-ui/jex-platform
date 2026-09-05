@@ -1,0 +1,86 @@
+<%- include('partials/head') %>
+<div class="shell">
+  <%- include('partials/nav') %>
+  <main class="main">
+    <h1>My Bots</h1>
+    <p>Manage everything you've deployed — edit, restart, redeploy, stop, or delete.</p>
+
+    <% if (flash) { %>
+      <div class="alert alert-<%= flash.type %>"><%= flash.message %></div>
+    <% } %>
+
+    <% if (!deployments.length) { %>
+      <div class="empty-state">
+        <div class="icon">🤖</div>
+        <h3>No bots deployed yet</h3>
+        <p>Once you deploy one, it'll show up here for you to manage.</p>
+        <a href="/deploy" class="btn btn-primary" style="max-width:220px;margin:0 auto">⚡ Deploy a bot</a>
+      </div>
+    <% } %>
+
+    <% deployments.forEach(function(d) { %>
+      <div class="bot-row-card">
+        <div class="bot-row-top">
+          <div class="bot-row-left">
+            <div class="bot-icon <%= d.bot ? d.bot.cssClass : 'b1' %>"><%= d.bot ? d.bot.initial : '?' %></div>
+            <div class="bot-row-meta">
+              <div class="app-name"><%= d.app_name %></div>
+              <div class="bot-slug"><%= d.bot ? d.bot.name : d.bot_slug %></div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+            <span class="badge badge-<%= d.status %>"><%= d.status %></span>
+            <div class="row-menu" data-row-id="<%= d.id %>">
+              <button class="row-dots" type="button" aria-label="Actions">⋮</button>
+              <div class="row-dropdown">
+                <a class="row-action" href="/deploy/status/<%= d.id %>">Edit session ID</a>
+                <% if (d.status === 'succeeded') { %>
+                  <form method="POST" action="/my-bots/<%= d.id %>/restart"><button class="row-action" type="submit">Restart</button></form>
+                  <form method="POST" action="/my-bots/<%= d.id %>/redeploy"><button class="row-action" type="submit">Redeploy latest code</button></form>
+                  <form method="POST" action="/my-bots/<%= d.id %>/stop"><button class="row-action" type="submit">Stop app</button></form>
+                <% } else if (d.status === 'stopped') { %>
+                  <form method="POST" action="/my-bots/<%= d.id %>/resume"><button class="row-action" type="submit">Resume app</button></form>
+                <% } %>
+                <div class="corner-divider"></div>
+                <form method="POST" action="/my-bots/<%= d.id %>/delete" class="confirm-delete">
+                  <button class="row-action danger" type="submit">Delete</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+        <% if (d.failure_message) { %>
+          <p style="margin:10px 0 0;font-size:12.5px;color:var(--text-faint)"><%= d.failure_message %></p>
+        <% } %>
+      </div>
+    <% }) %>
+  </main>
+</div>
+<script>
+  (function () {
+    document.addEventListener('click', function (e) {
+      var dotsBtn = e.target.closest('.row-dots');
+      var openMenus = document.querySelectorAll('.row-menu.open');
+
+      if (dotsBtn) {
+        var menu = dotsBtn.closest('.row-menu');
+        var wasOpen = menu.classList.contains('open');
+        openMenus.forEach(function (m) { m.classList.remove('open'); });
+        if (!wasOpen) menu.classList.add('open');
+        e.stopPropagation();
+        return;
+      }
+
+      if (!e.target.closest('.row-dropdown')) {
+        openMenus.forEach(function (m) { m.classList.remove('open'); });
+      }
+    });
+
+    document.querySelectorAll('.confirm-delete').forEach(function (form) {
+      form.addEventListener('submit', function (e) {
+        if (!confirm('Delete this app? This cannot be undone.')) e.preventDefault();
+      });
+    });
+  })();
+</script>
+<%- include('partials/foot') %>

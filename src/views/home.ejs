@@ -1,0 +1,429 @@
+<%- include('partials/head') %>
+<style>
+  /* Home page extends the shared tokens in style.css — no new palette here. */
+
+  a { text-decoration: none; }
+
+  /* ── Public nav ─────────────────────────────────────── */
+
+  .home-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(16, 12, 20, 0.9);
+    backdrop-filter: saturate(140%);
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .home-nav-inner {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .home-nav-links { display: flex; align-items: center; gap: 28px; }
+  .home-nav-links a { color: var(--text-dim); font-size: 14px; font-weight: 500; }
+  .home-nav-links a:hover { color: var(--text); }
+  .home-nav-actions { display: flex; align-items: center; gap: 10px; }
+  .home-nav-actions .btn { width: auto; padding: 9px 16px; font-size: 13.5px; }
+  .home-nav-toggle {
+    display: none;
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-size: 15px;
+    cursor: pointer;
+  }
+  .home-mobile-menu {
+    display: none;
+    flex-direction: column;
+    gap: 2px;
+    padding: 10px 20px 18px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .home-mobile-menu.open { display: flex; }
+  .home-mobile-menu a:not(.btn) {
+    color: var(--text-dim);
+    font-size: 14.5px;
+    font-weight: 500;
+    padding: 11px 4px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .home-mobile-menu a:not(.btn):last-of-type { border-bottom: none; }
+  .home-mobile-menu .btn { margin-top: 10px; width: 100%; }
+
+  /* ── Hero ───────────────────────────────────────────── */
+
+  .home-hero { max-width: 1080px; margin: 0 auto; padding: 56px 20px 40px; }
+  .home-hero-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 56px;
+    align-items: center;
+  }
+  .home-hero h1 {
+    font-size: 2.5rem;
+    line-height: 1.15;
+    margin-bottom: 18px;
+    max-width: 15ch;
+  }
+  .home-hero p { font-size: 15.5px; max-width: 46ch; margin-bottom: 28px; }
+  .home-hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+  .home-hero-actions .btn { width: auto; padding: 12px 22px; }
+
+  .home-console-wrap { position: relative; }
+  .home-console-wrap .console { min-height: 220px; }
+  .home-console-wrap .badge { margin-top: 12px; }
+
+  /* ── Sections ───────────────────────────────────────── */
+
+  .home-section { max-width: 1080px; margin: 0 auto; padding: 52px 20px; }
+  .home-section-head { max-width: 52ch; margin-bottom: 30px; }
+  .home-section-head h2 { font-size: 1.6rem; margin-bottom: 8px; }
+  .home-section-head p { font-size: 14px; margin: 0; }
+  .home-section-alt { background: var(--bg-raised); border-top: 1px solid var(--border-soft); border-bottom: 1px solid var(--border-soft); }
+
+  /* ── Features ───────────────────────────────────────── */
+
+  .home-features { display: grid; grid-template-columns: 1fr 1fr; gap: 0 44px; }
+  .home-feature { padding: 20px 0; border-bottom: 1px solid var(--border-soft); }
+  .home-feature h3 { font-size: 15px; margin-bottom: 5px; }
+  .home-feature p { font-size: 13.5px; margin: 0; }
+
+  /* ── Steps ──────────────────────────────────────────── */
+
+  .home-steps { max-width: 640px; }
+  .home-step { display: flex; gap: 18px; padding: 18px 0; border-bottom: 1px solid var(--border-soft); }
+  .home-step:last-child { border-bottom: none; }
+  .home-step .num { font-family: var(--font-mono); color: var(--text-faint); font-size: 13px; width: 24px; flex-shrink: 0; padding-top: 2px; }
+  .home-step h3 { font-size: 15px; margin-bottom: 4px; }
+  .home-step p { font-size: 13.5px; margin: 0; }
+
+  /* ── Bots ───────────────────────────────────────────── */
+
+  .home-bot-card { position: relative; }
+  .home-bot-card .bot-cost { position: absolute; top: 18px; right: 18px; margin: 0; }
+
+  /* ── Stats ──────────────────────────────────────────── */
+
+  .home-stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .home-stat { background: var(--bg-raised); border: 1px solid var(--border-soft); border-radius: var(--radius); padding: 22px 20px; border-bottom: 2px solid var(--border-soft); }
+  .home-stat.a { border-bottom-color: var(--accent); }
+  .home-stat.b { border-bottom-color: var(--cool); }
+  .home-stat.c { border-bottom-color: var(--warn); }
+  .home-stat .value { font-family: var(--font-display); font-size: 2rem; font-weight: 600; }
+  .home-stat .label { font-size: 12.5px; color: var(--text-faint); margin-top: 4px; }
+
+  /* ── CTA ────────────────────────────────────────────── */
+
+  .home-cta {
+    max-width: 1080px;
+    margin: 0 auto 60px;
+    padding: 40px 32px;
+    background: var(--bg-raised);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .home-cta h2 { font-size: 1.35rem; margin-bottom: 4px; }
+  .home-cta p { font-size: 13.5px; margin: 0; }
+  .home-cta .btn { width: auto; padding: 12px 22px; flex-shrink: 0; }
+
+  /* ── Footer ─────────────────────────────────────────── */
+
+  .home-footer { max-width: 1080px; margin: 0 auto; padding: 40px 20px 0; }
+  .home-footer-grid { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1.2fr; gap: 24px; padding-bottom: 30px; border-bottom: 1px solid var(--border-soft); }
+  .home-footer-grid h4 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-faint); margin-bottom: 14px; font-weight: 600; }
+  .home-footer-links { display: flex; flex-direction: column; gap: 10px; }
+  .home-footer-links a { color: var(--text-dim); font-size: 13.5px; }
+  .home-footer-links a:hover { color: var(--text); }
+  .home-footer-about p { font-size: 13.5px; max-width: 34ch; }
+
+  /* ── Motion: one entrance moment for the hero, nothing else ── */
+
+  .home-hero-copy, .home-console-wrap { opacity: 0; animation: home-rise 0.5s ease-out forwards; }
+  .home-console-wrap { animation-delay: 0.12s; }
+  @keyframes home-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  @media (max-width: 860px) {
+    .home-nav-links, .home-nav-actions { display: none; }
+    .home-nav-toggle { display: flex; align-items: center; justify-content: center; }
+    .home-hero-grid { grid-template-columns: 1fr; gap: 34px; }
+    .home-hero h1 { font-size: 2rem; max-width: none; }
+    .home-features { grid-template-columns: 1fr; }
+    .home-stats-grid { grid-template-columns: 1fr; }
+    .home-footer-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+
+<!-- Public nav -->
+<nav class="home-nav">
+  <div class="home-nav-inner">
+    <a href="/" class="brand"><span class="brand-mark">&gt;_</span><%= siteName %><span class="dot">.</span></a>
+    <div class="home-nav-links">
+      <a href="#features">Features</a>
+      <a href="#how-it-works">How it works</a>
+      <a href="#bots">Bots</a>
+      <a href="/login">Log in</a>
+    </div>
+    <div class="home-nav-actions">
+      <a href="/register" class="btn btn-primary">Sign up</a>
+    </div>
+    <button class="home-nav-toggle" id="homeNavToggle" aria-label="Menu" aria-expanded="false">☰</button>
+  </div>
+  <div class="home-mobile-menu" id="homeMobileMenu">
+    <a href="#features">Features</a>
+    <a href="#how-it-works">How it works</a>
+    <a href="#bots">Bots</a>
+    <a href="/login">Log in</a>
+    <a href="/register" class="btn btn-primary">Sign up</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<header class="home-hero">
+  <div class="home-hero-grid">
+    <div class="home-hero-copy">
+      <h1>Turn a session ID into a running WhatsApp bot</h1>
+      <p>
+        Pick a bot, paste your WhatsApp session, and <%= siteName %> builds and hosts it for you.
+        Coins cover the cost — no monthly seat, no server to manage.
+      </p>
+      <div class="home-hero-actions">
+        <a href="/register" class="btn btn-primary">Create my account</a>
+        <a href="#how-it-works" class="btn btn-secondary">See how it works</a>
+      </div>
+    </div>
+
+    <div class="home-console-wrap">
+      <div class="console" id="homeConsole"></div>
+    </div>
+  </div>
+</header>
+
+<!-- Features -->
+<section id="features" class="home-section">
+  <div class="home-section-head">
+    <h2>Why builders use <%= siteName %></h2>
+    <p>Everything a bot needs to stay online, without the parts you'd rather not run yourself.</p>
+  </div>
+  <div class="home-features">
+    <div class="home-feature">
+      <h3>Instant deployment</h3>
+      <p>Paste your session ID and it's live in seconds — no server administration knowledge required.</p>
+    </div>
+    <div class="home-feature">
+      <h3>Coin-based deploys</h3>
+      <p>Coins cover the deploy and its upkeep, not a monthly seat. Top up when you actually need to.</p>
+    </div>
+    <div class="home-feature">
+      <h3>Referrals pay you back</h3>
+      <p>Invite a friend and earn bonus coins once they verify their account. No spending required.</p>
+    </div>
+    <div class="home-feature">
+      <h3>Built for uptime</h3>
+      <p>We handle restarts, builds, and crashes on our infrastructure. If a bot goes down, it comes back.</p>
+    </div>
+    <div class="home-feature">
+      <h3>One dashboard</h3>
+      <p>Every bot you run, its status, and your coin balance — in a single place.</p>
+    </div>
+    <div class="home-feature">
+      <h3>Real support</h3>
+      <p>Questions or issues reach an actual person at <%= supportEmail %>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- How it works -->
+<section id="how-it-works" class="home-section home-section-alt">
+  <div class="home-section-head">
+    <h2>How it works</h2>
+    <p>Four steps between signing up and a bot that's actually running.</p>
+  </div>
+  <div class="home-steps">
+    <div class="home-step">
+      <div class="num">01</div>
+      <div><h3>Create an account</h3><p>Sign up free and verify your email in a few seconds.</p></div>
+    </div>
+    <div class="home-step">
+      <div class="num">02</div>
+      <div><h3>Get starter coins</h3><p>New accounts start with free coins, plus more from referrals.</p></div>
+    </div>
+    <div class="home-step">
+      <div class="num">03</div>
+      <div><h3>Deploy a bot</h3><p>Pick a bot, connect your session, and confirm the deploy in coins.</p></div>
+    </div>
+    <div class="home-step">
+      <div class="num">04</div>
+      <div><h3>Keep it running</h3><p>Track status, restarts, and coin balance from your dashboard.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- Available bots -->
+<section id="bots" class="home-section">
+  <div class="home-section-head">
+    <h2>Available bots (<%= bots.length %>)</h2>
+    <p>Each one deploys the same way — pick it, connect a session, done.</p>
+  </div>
+  <div class="bot-grid">
+    <% bots.forEach(function(bot) { %>
+    <a href="/register" class="bot-card home-bot-card">
+      <div class="bot-icon <%= bot.cssClass %>"><%= bot.initial %></div>
+      <h3><%= bot.name %></h3>
+      <p class="tagline"><%= bot.tagline %></p>
+      <span class="bot-cost">🪙 <%= bot.costCoins %> JC</span>
+    </a>
+    <% }) %>
+  </div>
+</section>
+
+<!-- Stats -->
+<section class="home-section home-section-alt">
+  <div class="home-section-head">
+    <h2>Right now</h2>
+    <p>Live numbers from this instance.</p>
+  </div>
+  <div class="home-stats-grid">
+    <div class="home-stat a">
+      <div class="value" id="userCount" data-target="<%= stats.users %>">0</div>
+      <div class="label">Verified builders</div>
+    </div>
+    <div class="home-stat b">
+      <div class="value" id="botCount" data-target="<%= stats.activeDeployments %>">0</div>
+      <div class="label">Bots running right now</div>
+    </div>
+    <div class="home-stat c">
+      <div class="value" id="catalogCount" data-target="<%= bots.length %>">0</div>
+      <div class="label">Bots ready to deploy</div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="home-cta">
+  <div>
+    <h2>Your bot could be live in five minutes</h2>
+    <p>Free to sign up, starter coins included, no card required.</p>
+  </div>
+  <a href="/register" class="btn btn-primary">Create my account</a>
+</div>
+
+<!-- Footer -->
+<footer class="home-footer">
+  <div class="home-footer-grid">
+    <div class="home-footer-about">
+      <div class="brand" style="margin-bottom:12px"><span class="brand-mark">&gt;_</span><%= siteName %><span class="dot">.</span></div>
+      <p>Deploy WhatsApp bots to hosted infrastructure in minutes — no server management required.</p>
+    </div>
+    <div>
+      <h4>Navigate</h4>
+      <div class="home-footer-links">
+        <a href="/">Home</a>
+        <a href="#features">Features</a>
+        <a href="#how-it-works">How it works</a>
+        <a href="#bots">Bots</a>
+      </div>
+    </div>
+    <div>
+      <h4>Account</h4>
+      <div class="home-footer-links">
+        <a href="/login">Log in</a>
+        <a href="/register">Sign up</a>
+      </div>
+    </div>
+    <div>
+      <h4>Support &amp; legal</h4>
+      <div class="home-footer-links">
+        <a href="mailto:<%= supportEmail %>"><%= supportEmail %></a>
+        <% if (whatsappSupportUrl) { %><a href="<%= whatsappSupportUrl %>" target="_blank" rel="noopener">WhatsApp support</a><% } %>
+        <% if (tutorialUrl) { %><a href="<%= tutorialUrl %>" target="_blank" rel="noopener">Tutorial</a><% } %>
+        <a href="/terms">Terms of Service</a>
+        <a href="/privacy">Privacy Policy</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    var toggle = document.getElementById('homeNavToggle');
+    var menu = document.getElementById('homeMobileMenu');
+    if (toggle && menu) {
+      toggle.addEventListener('click', function () {
+        var open = menu.classList.toggle('open');
+        toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+    }
+
+    // Animated counters (real numbers rendered server-side via data-target)
+    function animateCounter(el, duration) {
+      var target = Number(el.getAttribute('data-target')) || 0;
+      var start = 0;
+      var t0 = null;
+      function step(ts) {
+        if (!t0) t0 = ts;
+        var progress = Math.min((ts - t0) / duration, 1);
+        el.textContent = Math.floor(start + (target - start) * progress).toLocaleString();
+        if (progress < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+    document.querySelectorAll('.home-stat .value').forEach(function (el) {
+      animateCounter(el, 1200);
+    });
+
+    // Hero console: a typed-out deploy log, then a quiet loop through the real bots.
+    var botNames = [<% bots.forEach(function(bot, i) { %><%= i > 0 ? ',' : '' %><%- JSON.stringify(bot.name) %><% }) %>];
+    if (!botNames.length) botNames = ['<%= siteName %>'];
+    var el = document.getElementById('homeConsole');
+    var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function line(t, msg, cls) {
+      var d = document.createElement('div');
+      d.className = 'console-line' + (cls ? ' ' + cls : '');
+      d.innerHTML = '<span class="t">[' + t + ']</span><span class="msg"></span>';
+      d.querySelector('.msg').textContent = msg;
+      return d;
+    }
+
+    function runDemo(botName) {
+      el.innerHTML = '';
+      var script = [
+        ['00:00', 'Deploy started (' + botName.toLowerCase().replace(/\s+/g, '-') + ')', null],
+        ['00:02', 'Fetching latest build', null],
+        ['00:07', 'Installing dependencies', null],
+        ['00:14', 'Starting dyno', null],
+        ['00:16', botName + ' is live', 'ok']
+      ];
+      if (reduceMotion) {
+        script.forEach(function (s) { el.appendChild(line(s[0], s[1], s[2])); });
+        return;
+      }
+      var i = 0;
+      (function next() {
+        if (i >= script.length) {
+          setTimeout(function () {
+            var idx = botNames.indexOf(botName);
+            runDemo(botNames[(idx + 1) % botNames.length]);
+          }, 2600);
+          return;
+        }
+        el.appendChild(line(script[i][0], script[i][1], script[i][2]));
+        i++;
+        setTimeout(next, 480);
+      })();
+    }
+
+    if (el) runDemo(botNames[0]);
+  })();
+</script>
+<%- include('partials/foot') %>

@@ -1,0 +1,52 @@
+<%- include('partials/head') %>
+<div class="shell">
+  <%- include('partials/nav') %>
+  <main class="main">
+    <h1>My Profile</h1>
+
+    <% if (flash) { %>
+      <div class="alert alert-<%= flash.type %>"><%= flash.message %></div>
+    <% } %>
+
+    <div class="profile-avatar"><%= user.email.charAt(0).toUpperCase() %></div>
+
+    <div class="profile-stat-row">
+      <div class="profile-stat"><div class="v">🪙 <%= user.coins %></div><div class="k">JC Balance</div></div>
+      <div class="profile-stat"><div class="v">#<%= user.referral_code %></div><div class="k">Referral Code</div></div>
+      <div class="profile-stat"><div class="v"><%= new Date(Number(user.created_at)).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) %></div><div class="k">Member Since</div></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Profile information</div>
+      <p style="margin-bottom:16px">Username and email aren't editable.</p>
+      <div class="field">
+        <label>Username</label>
+        <div class="readonly-field"><%= user.email.split('@')[0] %></div>
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <label>Email</label>
+        <div class="readonly-field"><%= user.email %></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Change password</div>
+      <form method="POST" action="/my-profile/password">
+        <div class="field">
+          <label for="current_password">Current password</label>
+          <input type="password" id="current_password" name="current_password" required>
+        </div>
+        <div class="field">
+          <label for="new_password">New password</label>
+          <input type="password" id="new_password" name="new_password" minlength="8" required>
+        </div>
+        <div class="field">
+          <label for="confirm_password">Confirm new password</label>
+          <input type="password" id="confirm_password" name="confirm_password" minlength="8" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Update password</button>
+      </form>
+    </div>
+  </main>
+</div>
+<%- include('partials/foot') %>

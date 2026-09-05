@@ -1,0 +1,26 @@
+<div class="site-footer">Made with ♥ by <%= teamName %> &middot; &copy; <%= new Date().getFullYear() %> <%= siteName %>. All rights reserved.</div>
+<script>
+  (function () {
+    var container = document.getElementById('particles');
+    if (!container) return;
+    var count = 50;
+    for (var i = 0; i < count; i++) {
+      var p = document.createElement('div');
+      var size = Math.random() * 4 + 1;
+      p.style.position = 'absolute';
+      p.style.width = size + 'px';
+      p.style.height = size + 'px';
+      p.style.left = Math.random() * 100 + '%';
+      p.style.top = Math.random() * 100 + '%';
+      p.style.background = 'rgba(255, ' + Math.floor(Math.random() * 80 + 60) + ', ' + Math.floor(Math.random() * 60 + 100) + ', ' + (Math.random() * 0.3 + 0.1).toFixed(2) + ')';
+      p.style.borderRadius = '50%';
+      p.style.setProperty('--dx', (Math.random() * 100 - 50) + 'px');
+      p.style.setProperty('--dy', (Math.random() * 100 - 50) + 'px');
+      p.style.animation = 'particle-float ' + (Math.random() * 20 + 10) + 's linear infinite';
+      p.style.animationDelay = (Math.random() * 5) + 's';
+      container.appendChild(p);
+    }
+  })();
+</script>
+</body>
+</html>

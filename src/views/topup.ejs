@@ -1,0 +1,189 @@
+<%- include('partials/head') %>
+<div class="dashboard-container">
+  <%- include('partials/sidebar') %>
+  <div class="main-content">
+    <div class="page-header">
+      <div class="page-header-left">
+        <h1>Buy coins</h1>
+      </div>
+      <div class="page-header-actions">
+        <button class="sidebar-toggle" id="sidebarToggle" aria-label="Menu">☰</button>
+      </div>
+    </div>
+    <p style="margin-top:-14px;margin-bottom:20px">Current balance: <strong style="color:var(--text)"><%= user.coins %> JC</strong></p>
+
+    <% if (flash) { %>
+      <div class="alert alert-<%= flash.type %>"><%= flash.message %></div>
+    <% } %>
+
+    <% if (marzConfigured) { %>
+    <!-- Automatic: MarzPay mobile money -->
+    <% if (!packages || !packages.length) { %>
+      <div class="alert alert-error">No coin packages are configured yet. Contact support to top up.</div>
+    <% } else { %>
+    <div class="step-label">1. Choose a package</div>
+    <form method="POST" action="/topup/pay" id="payForm">
+      <div class="package-grid" id="packageGrid">
+        <% packages.forEach(function (pkg) { %>
+          <label class="package-card <%= pkg.popular ? 'popular' : '' %>" data-coins="<%= pkg.coins %>">
+            <input type="radio" name="packageId" value="<%= pkg.coins %>" required style="display:none">
+            <div class="amount"><%= pkg.label %></div>
+            <div class="unit"><%= Number(pkg.amountUgx).toLocaleString() %> UGX</div>
+          </label>
+        <% }) %>
+      </div>
+
+      <div class="step-label" style="margin-top:20px">2. Mobile money number</div>
+      <div class="panel" style="max-width:420px">
+        <div class="field">
+          <label for="phone">Phone (MTN or Airtel)</label>
+          <input type="tel" id="phone" name="phone" placeholder="07XX XXX XXX or +2567…" required
+                 pattern="(\+?256|0)?7[0-9]{8}" inputmode="tel" autocomplete="tel">
+          <p id="phoneHint" style="font-size:12px;color:var(--text-faint);margin-top:6px">
+            You will receive a prompt on this phone. Approve it to complete payment. Coins are added automatically.
+          </p>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" id="payBtn" disabled>Select a package to continue</button>
+      </div>
+    </form>
+
+    <details style="margin-top:28px">
+      <summary style="cursor:pointer;font-size:13px;color:var(--text-faint)">Can't complete mobile money? Pay manually instead</summary>
+      <div style="margin-top:16px">
+        <div class="step-label">Send payment</div>
+        <div class="payment-card">
+          <strong><%= paymentLabel %></strong>
+          <div class="payment-number">
+            <span class="mono"><%= paymentNumber %></span>
+            <button class="copy-btn" id="copyPayBtn" type="button">Copy</button>
+          </div>
+          <ol class="pay-steps">
+            <li>Send your chosen amount to the number above via <%= paymentLabel %>.</li>
+            <li>Keep the confirmation / transaction reference.</li>
+          </ol>
+        </div>
+        <div class="panel" style="margin-top:14px">
+          <p style="margin-bottom:14px">Email your payment confirmation to <strong style="color:var(--text)"><%= supportEmail %></strong> along with the email address you registered with. Coins are added to your account shortly after.</p>
+          <a href="mailto:<%= supportEmail %>?subject=<%= encodeURIComponent('JC top-up - ' + user.email) %>" class="btn btn-secondary" style="max-width:260px">Email payment proof</a>
+        </div>
+      </div>
+    </details>
+    <% } %>
+    <% } else { %>
+    <!-- Manual fallback when MarzPay is not configured -->
+    <div class="step-label">1. Pick an amount</div>
+    <div class="package-grid" id="packageGrid">
+      <div class="package-card" data-jc="100" data-price="1.2"><div class="amount">100 JC</div><div class="unit">$1.2</div><div class="expiry">lasts <%= smallExpiryDays %> days</div></div>
+      <div class="package-card popular" data-jc="200" data-price="2.4"><div class="amount">200 JC</div><div class="unit">$2.4</div><div class="expiry">lasts <%= smallExpiryDays %> days</div></div>
+      <div class="package-card" data-jc="500" data-price="3.6"><div class="amount">500 JC</div><div class="unit">$3.6</div><div class="expiry">lasts <%= smallExpiryDays %> days</div></div>
+      <div class="package-card" data-jc="700" data-price="6"><div class="amount">700 JC</div><div class="unit">$6</div><div class="expiry">lasts <%= largeExpiryDays %> days</div></div>
+      <div class="package-card" data-jc="900" data-price="8"><div class="amount">900 JC</div><div class="unit">$8</div><div class="expiry">lasts <%= largeExpiryDays %> days</div></div>
+    </div>
+    <p style="font-size:12.5px;color:var(--text-faint);margin-top:-10px">Tap a package to select it, then follow the steps below. Coins are credited once we confirm your payment — see step 3.</p>
+
+    <div class="step-label">2. Send payment</div>
+    <div class="payment-card">
+      <strong><%= paymentLabel %></strong>
+      <div class="payment-number">
+        <span class="mono"><%= paymentNumber %></span>
+        <button class="copy-btn" id="copyPayBtn" type="button">Copy</button>
+      </div>
+      <ol class="pay-steps">
+        <li>Send your chosen amount to the number above via <%= paymentLabel %>.</li>
+        <li>Keep the confirmation / transaction reference.</li>
+      </ol>
+    </div>
+
+    <div class="step-label" style="margin-top:24px">3. Submit payment proof</div>
+    <div class="panel">
+      <p style="margin-bottom:14px">Email your payment confirmation to <strong style="color:var(--text)"><%= supportEmail %></strong> along with the email address you registered with. Coins are added to your account shortly after.</p>
+      <a href="mailto:<%= supportEmail %>?subject=<%= encodeURIComponent('JC top-up - ' + user.email) %>" class="btn btn-primary" style="max-width:260px" id="emailProofBtn">Email payment proof</a>
+    </div>
+    <% } %>
+  </div>
+</div>
+<script>
+  (function () {
+    var cards = document.querySelectorAll('.package-card');
+    cards.forEach(function (card) {
+      card.addEventListener('click', function () {
+        cards.forEach(function (c) { c.classList.remove('selected'); });
+        card.classList.add('selected');
+        var radio = card.querySelector('input[type=radio]');
+        if (radio) radio.checked = true;
+      });
+    });
+
+    var form = document.getElementById('payForm');
+    if (form) {
+      var payBtn = document.getElementById('payBtn');
+      var phoneInput = document.getElementById('phone');
+      var phoneHint = document.getElementById('phoneHint');
+      var phonePattern = /^(\+?256|0)?7[0-9]{8}$/;
+      var selectedPackage = false;
+
+      function refreshPayBtn() {
+        var phoneOk = phonePattern.test((phoneInput.value || '').replace(/[\s-]/g, ''));
+        payBtn.disabled = !(selectedPackage && phoneOk);
+        if (!selectedPackage) {
+          payBtn.textContent = 'Select a package to continue';
+        } else if (!phoneOk) {
+          payBtn.textContent = 'Enter a valid phone number';
+        } else {
+          payBtn.textContent = 'Pay with Mobile Money';
+        }
+      }
+
+      cards.forEach(function (card) {
+        if (card.closest('#packageGrid')) {
+          card.addEventListener('click', function () {
+            selectedPackage = true;
+            refreshPayBtn();
+          });
+        }
+      });
+
+      phoneInput.addEventListener('input', function () {
+        var clean = (phoneInput.value || '').replace(/[\s-]/g, '');
+        var ok = phonePattern.test(clean);
+        phoneHint.style.color = clean.length >= 9 && !ok ? 'var(--danger)' : 'var(--text-faint)';
+        phoneHint.textContent = clean.length >= 9 && !ok
+          ? 'That doesn\'t look like a Ugandan mobile number.'
+          : 'You will receive a prompt on this phone. Approve it to complete payment. Coins are added automatically.';
+        refreshPayBtn();
+      });
+
+      form.addEventListener('submit', function () {
+        payBtn.disabled = true;
+        payBtn.textContent = 'Sending request…';
+      });
+    }
+
+    var copyBtn = document.getElementById('copyPayBtn');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', function () {
+        navigator.clipboard.writeText(<%- JSON.stringify(paymentNumber || '') %>).then(function () {
+          var original = copyBtn.textContent;
+          copyBtn.textContent = 'Copied!';
+          setTimeout(function () { copyBtn.textContent = original; }, 1500);
+        });
+      });
+    }
+
+    var emailBtn = document.getElementById('emailProofBtn');
+    if (emailBtn) {
+      var supportEmail = <%- JSON.stringify(supportEmail) %>;
+      var userEmail = <%- JSON.stringify(user.email) %>;
+      cards.forEach(function (card) {
+        card.addEventListener('click', function () {
+          var jc = card.getAttribute('data-jc');
+          var price = card.getAttribute('data-price');
+          if (!jc) return;
+          var subject = 'JC top-up - ' + jc + ' JC ($' + price + ') - ' + userEmail;
+          emailBtn.href = 'mailto:' + supportEmail + '?subject=' + encodeURIComponent(subject);
+        });
+      });
+    }
+  })();
+</script>
+<%- include('partials/foot') %>

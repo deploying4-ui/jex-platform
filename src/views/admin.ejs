@@ -1,0 +1,97 @@
+<%- include('partials/head') %>
+<div class="dashboard-container">
+  <%- include('partials/sidebar') %>
+  <div class="main-content">
+    <div class="page-header">
+      <div class="page-header-left">
+        <h1>Admin</h1>
+      </div>
+      <div class="page-header-actions">
+        <a href="/admin/users" class="btn btn-secondary">All Users</a>
+        <button class="sidebar-toggle" id="sidebarToggle" aria-label="Menu">☰</button>
+      </div>
+    </div>
+    <p style="margin-top:-14px;margin-bottom:20px">Look up a user by email to view their account, change their role, or adjust their JC balance.</p>
+
+    <% if (flash) { %>
+      <div class="alert alert-<%= flash.type %>"><%= flash.message %></div>
+    <% } %>
+
+    <form method="GET" action="/admin" class="admin-search">
+      <input type="email" name="email" placeholder="user@example.com" value="<%= searchedEmail %>" required>
+      <button type="submit" class="btn btn-primary" style="width:auto;padding:11px 18px">Search</button>
+    </form>
+
+    <% if (searchedEmail && !lookup) { %>
+      <div class="alert alert-error">No user found with that email.</div>
+    <% } %>
+
+    <% if (lookup) { %>
+      <div class="panel admin-user-card">
+        <div class="panel-title">Account</div>
+        <div class="badge-row" style="margin-top:0">
+          <% if (lookup.is_admin) { %><span class="role-badge admin">Admin</span><% } %>
+          <% if (lookup.is_banned) { %><span class="role-badge" style="background:var(--danger-bg);color:var(--danger);border-color:rgba(255,92,114,0.3)">Banned</span><% } %>
+          <% if (lookup.plan === 'premium') { %><span class="role-badge premium">Premium</span><% } %>
+          <% if (lookup.verified) { %><span class="role-badge verified">Verified</span><% } %>
+          <span class="role-badge level">⭐ <%= lookup.level.name %></span>
+        </div>
+        <div class="row"><span class="k">Email</span><span class="v"><%= lookup.email %></span></div>
+        <div class="row"><span class="k">JC balance</span><span class="v"><%= lookup.coins %></span></div>
+        <div class="row"><span class="k">Referrals</span><span class="v"><%= lookup.referralCount %></span></div>
+        <div class="row"><span class="k">Deployments</span><span class="v"><%= lookup.deployStats.total %> total · <%= lookup.deployStats.active %> active</span></div>
+        <div class="row"><span class="k">Joined</span><span class="v"><%= new Date(Number(lookup.created_at)).toLocaleDateString() %></span></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">Role &amp; plan</div>
+        <div class="btn-row" style="margin-bottom:10px">
+          <form method="POST" action="/admin/set-role">
+            <input type="hidden" name="email" value="<%= lookup.email %>">
+            <input type="hidden" name="role" value="<%= lookup.is_admin ? 'user' : 'admin' %>">
+            <button type="submit" class="btn <%= lookup.is_admin ? 'btn-secondary' : 'btn-primary' %>">
+              <%= lookup.is_admin ? 'Demote to Normal User' : 'Promote to Admin' %>
+            </button>
+          </form>
+          <form method="POST" action="/admin/set-plan">
+            <input type="hidden" name="email" value="<%= lookup.email %>">
+            <input type="hidden" name="plan" value="<%= lookup.plan === 'premium' ? 'none' : 'premium' %>">
+            <button type="submit" class="btn <%= lookup.plan === 'premium' ? 'btn-secondary' : 'btn-primary' %>">
+              <%= lookup.plan === 'premium' ? 'Remove Premium' : 'Make Premium' %>
+            </button>
+          </form>
+          <% if (!lookup.is_admin) { %>
+          <form method="POST" action="/admin/set-ban">
+            <input type="hidden" name="email" value="<%= lookup.email %>">
+            <input type="hidden" name="banned" value="<%= lookup.is_banned ? 'false' : 'true' %>">
+            <button type="submit" class="btn <%= lookup.is_banned ? 'btn-secondary' : 'btn-danger' %>">
+              <%= lookup.is_banned ? 'Unban User' : 'Ban User' %>
+            </button>
+          </form>
+          <% } %>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">Adjust JC balance</div>
+        <form method="POST" action="/admin/add-coins">
+          <input type="hidden" name="email" value="<%= lookup.email %>">
+          <div class="field">
+            <label for="amount">Amount (use a negative number to deduct)</label>
+            <input type="text" id="amount" name="amount" class="mono-field" placeholder="e.g. 200 or -50" required>
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label for="expiry">If crediting coins, extend expiry by</label>
+            <select id="expiry" name="expiry" style="width:100%;background:var(--bg-inset);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm);padding:11px 12px;font-size:14.5px;font-family:var(--font-body)">
+              <option value="none">Don't change expiry</option>
+              <option value="small">1 month (100 / 200 / 500 JC packages)</option>
+              <option value="large">2 months (700 / 900 JC packages)</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary" style="margin-top:16px">Update balance</button>
+        </form>
+      </div>
+    <% } %>
+  </div>
+</div>
+<%- include('partials/foot') %>

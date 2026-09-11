@@ -1,0 +1,35 @@
+<%- include('partials/head') %>
+<div class="dashboard-container">
+  <%- include('partials/sidebar') %>
+  <div class="main-content">
+    <div class="page-header">
+      <div class="page-header-left">
+        <h1>Deploy a bot</h1>
+      </div>
+      <div class="page-header-actions">
+        <span class="balance-chip">🪙 <%= user.coins %> JC</span>
+        <a href="/topup" class="btn btn-secondary">Buy coins</a>
+        <button class="sidebar-toggle" id="sidebarToggle" aria-label="Menu">☰</button>
+      </div>
+    </div>
+    <p style="margin-top:-14px;margin-bottom:20px">Pick a bot below, fill in its config, and jex-platform takes it from there.</p>
+
+    <% if (flash) { %>
+      <div class="alert alert-<%= flash.type %>"><%= flash.message %></div>
+    <% } %>
+
+    <div class="step-label">Available bots (<%= bots.length %>)</div>
+    <div class="bot-grid">
+      <% bots.forEach(function(bot) { %>
+        <a class="bot-card" href="/deploy/<%= bot.slug %>">
+          <div class="bot-icon <%= bot.cssClass %>"><%= bot.initial %></div>
+          <h3><%= bot.name %></h3>
+          <p class="tagline"><%= bot.tagline %></p>
+          <div class="bot-cost">🪙 <%= bot.costCoins %> JC</div>
+          <div class="bot-active-count"><%= bot.activeCount %> active deploy<%= bot.activeCount === 1 ? '' : 's' %></div>
+        </a>
+      <% }) %>
+    </div>
+  </div>
+</div>
+<%- include('partials/foot') %>

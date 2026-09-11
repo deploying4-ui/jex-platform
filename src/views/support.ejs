@@ -1,0 +1,72 @@
+<%- include('partials/head') %>
+<div class="dashboard-container">
+  <%- include('partials/sidebar') %>
+  <div class="main-content">
+    <div class="page-header">
+      <div class="page-header-left">
+        <h1>Support</h1>
+      </div>
+      <div class="page-header-actions">
+        <button class="sidebar-toggle" id="sidebarToggle" aria-label="Menu">☰</button>
+      </div>
+    </div>
+    <p style="margin-top:-14px;margin-bottom:20px">Open a ticket and we'll reply here — you'll also get an email when we respond.</p>
+
+    <% if (flash) { %>
+      <div class="alert alert-<%= flash.type %>"><%= flash.message %></div>
+    <% } %>
+
+    <% if (whatsappSupportUrl || supportEmail) { %>
+    <div class="panel" style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;justify-content:space-between">
+      <div>
+        <div class="panel-title" style="margin-bottom:4px">Need a faster answer?</div>
+        <p style="margin:0;font-size:13px">
+          <% if (whatsappSupportUrl) { %>Message us on WhatsApp<% } %>
+          <% if (whatsappSupportUrl && supportEmail) { %> or <% } %>
+          <% if (supportEmail) { %>email <strong style="color:var(--text)"><%= supportEmail %></strong><% } %>.
+        </p>
+      </div>
+      <% if (whatsappSupportUrl) { %>
+      <a href="<%= whatsappSupportUrl %>" target="_blank" rel="noopener" class="btn btn-secondary" style="max-width:200px">WhatsApp us</a>
+      <% } %>
+    </div>
+    <% } %>
+
+    <div class="step-label">New ticket</div>
+    <div class="panel">
+      <form method="POST" action="/support">
+        <div class="field">
+          <label for="subject">Subject</label>
+          <input type="text" id="subject" name="subject" placeholder="e.g. My bot won't start" maxlength="200" required>
+        </div>
+        <div class="field">
+          <label for="body">Message</label>
+          <textarea id="body" name="body" rows="4" placeholder="Tell us what's going on…" maxlength="5000" required
+                    style="width:100%;background:var(--bg-inset);border:1px solid var(--border);border-radius:var(--radius-sm);padding:11px 14px;color:var(--text);font-family:var(--font-body);font-size:14px;resize:vertical"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Submit ticket</button>
+      </form>
+    </div>
+
+    <div class="step-label" style="margin-top:24px">Your tickets</div>
+    <% if (!tickets.length) { %>
+    <div class="empty-state">
+      <div class="icon">💬</div>
+      <h3>No tickets yet</h3>
+      <p>Once you open one, it'll show up here.</p>
+    </div>
+    <% } %>
+    <% tickets.forEach(function (t) { %>
+    <a href="/support/<%= t.id %>" class="bot-row-card" style="display:flex;align-items:center;justify-content:space-between;gap:12px;text-decoration:none;color:inherit">
+      <div style="min-width:0">
+        <div style="font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><%= t.subject %></div>
+        <div style="font-size:12.5px;color:var(--text-faint);margin-top:2px">
+          Ticket #<%= t.id %> · updated <%= new Date(Number(t.updated_at)).toLocaleDateString() %>
+        </div>
+      </div>
+      <span class="badge badge-<%= t.status %>" style="flex-shrink:0"><%= t.status === 'open' ? 'Open' : 'Closed' %></span>
+    </a>
+    <% }) %>
+  </div>
+</div>
+<%- include('partials/foot') %>

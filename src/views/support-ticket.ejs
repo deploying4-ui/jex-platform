@@ -1,0 +1,71 @@
+<%- include('partials/head') %>
+<div class="dashboard-container">
+  <%- include('partials/sidebar') %>
+  <div class="main-content">
+    <div class="page-header">
+      <div class="page-header-left">
+        <h1>Ticket #<%= ticket.id %></h1>
+      </div>
+      <div class="page-header-actions">
+        <a href="<%= isAdminView ? '/admin/support' : '/support' %>" class="btn btn-secondary">Back</a>
+        <button class="sidebar-toggle" id="sidebarToggle" aria-label="Menu">☰</button>
+      </div>
+    </div>
+
+    <% if (flash) { %>
+      <div class="alert alert-<%= flash.type %>"><%= flash.message %></div>
+    <% } %>
+
+    <div class="panel" style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap">
+      <div>
+        <div style="font-weight:600;color:var(--text);font-size:15.5px"><%= ticket.subject %></div>
+        <div style="font-size:12.5px;color:var(--text-faint);margin-top:2px">
+          <% if (isAdminView) { %><%= ticket.user_email %> · <% } %>opened <%= new Date(Number(ticket.created_at)).toLocaleDateString() %>
+        </div>
+      </div>
+      <span class="badge badge-<%= ticket.status %>"><%= ticket.status === 'open' ? 'Open' : 'Closed' %></span>
+    </div>
+
+    <% messages.forEach(function (m) { %>
+    <div class="panel" style="<%= m.is_admin ? 'border-color:rgba(162,86,234,0.35)' : '' %>">
+      <div style="font-size:12.5px;color:var(--text-faint);margin-bottom:8px">
+        <strong style="color:<%= m.is_admin ? 'var(--accent-strong)' : 'var(--text-dim)' %>"><%= m.is_admin ? 'Support' : m.author_email %></strong>
+        · <%= new Date(Number(m.created_at)).toLocaleString() %>
+      </div>
+      <p style="margin:0;white-space:pre-wrap"><%= m.body %></p>
+    </div>
+    <% }) %>
+
+    <% if (isAdminView) { %>
+    <div class="panel">
+      <div class="panel-title">Reply as support</div>
+      <form method="POST" action="/admin/support/<%= ticket.id %>/reply">
+        <div class="field">
+          <textarea name="body" rows="4" required maxlength="5000" placeholder="Type your reply…"
+                    style="width:100%;background:var(--bg-inset);border:1px solid var(--border);border-radius:var(--radius-sm);padding:11px 14px;color:var(--text);font-family:var(--font-body);font-size:14px;resize:vertical"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Send reply</button>
+      </form>
+      <form method="POST" action="/admin/support/<%= ticket.id %>/status" style="margin-top:10px">
+        <input type="hidden" name="status" value="<%= ticket.status === 'open' ? 'closed' : 'open' %>">
+        <button type="submit" class="btn btn-secondary btn-block"><%= ticket.status === 'open' ? 'Mark as closed' : 'Reopen ticket' %></button>
+      </form>
+    </div>
+    <% } else { %>
+    <div class="panel">
+      <div class="panel-title">Reply</div>
+      <form method="POST" action="/support/<%= ticket.id %>/reply">
+        <div class="field">
+          <textarea name="body" rows="4" required maxlength="5000" placeholder="Add more details…"
+                    style="width:100%;background:var(--bg-inset);border:1px solid var(--border);border-radius:var(--radius-sm);padding:11px 14px;color:var(--text);font-family:var(--font-body);font-size:14px;resize:vertical"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Send</button>
+      </form>
+      <% if (ticket.status === 'closed') { %>
+      <p style="font-size:12.5px;color:var(--text-faint);margin-top:10px">This ticket is closed — sending a reply will reopen it.</p>
+      <% } %>
+    </div>
+    <% } %>
+  </div>
+</div>
+<%- include('partials/foot') %>

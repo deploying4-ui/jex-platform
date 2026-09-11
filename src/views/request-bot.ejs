@@ -1,0 +1,112 @@
+<%- include('partials/head') %>
+<div class="dashboard-container">
+  <%- include('partials/sidebar') %>
+  <div class="main-content">
+    <div class="page-header">
+      <div class="page-header-left">
+        <h1>Request a Bot</h1>
+      </div>
+      <div class="page-header-actions">
+        <button class="sidebar-toggle" id="sidebarToggle" aria-label="Menu">☰</button>
+      </div>
+    </div>
+    <p style="margin-top:-14px;margin-bottom:20px">Built a WhatsApp bot? Get it added to the deploy catalog so anyone can deploy it here.</p>
+
+    <% if (flash) { %>
+      <div class="alert alert-<%= flash.type %>"><%= flash.message %></div>
+    <% } %>
+
+    <div class="profile-tabs">
+      <button class="profile-tab-btn active" data-tab="new">New request</button>
+      <button class="profile-tab-btn" data-tab="mine">My requests<% if (requests.length) { %> (<%= requests.length %>)<% } %></button>
+    </div>
+
+    <div class="profile-tab-panel active" id="tab-new">
+      <div class="panel">
+        <div class="panel-title">Requirements</div>
+        <p style="margin-bottom:10px">Your repo needs one file at its root, on the branch you enter below: <code>jexhost.json</code>. It covers everything — ownership, display info, and the env vars the deploy form will ask for.</p>
+        <pre style="background:rgba(0,0,0,0.35);border:1px solid var(--border-soft);border-radius:10px;padding:14px 16px;font-size:12.5px;overflow-x:auto;margin:0 0 16px"><code>{
+  "bot-name": "Your Bot Name",
+  "owner-verification": "your-account-email@example.com",
+  "tagline": "One short line about your bot",
+  "documentation-link": "https://github.com/you/your-bot#readme",
+  "session-helper-url": "",
+  "env": {
+    "SESSION_ID": {
+      "description": "Paired WhatsApp session string",
+      "required": true
+    },
+    "BOT_NAME": {
+      "description": "Display name shown in bot replies",
+      "required": false,
+      "value": "MyBot"
+    }
+  }
+}</code></pre>
+        <p style="font-size:12.5px;color:var(--text-faint)"><code>owner-verification</code> must exactly match your account email (<%= user.email %>), or the request is rejected automatically. <code>session-helper-url</code> is optional — leave it blank to use the platform's shared pairing site. <code>env</code> follows the same shape as Heroku's app.json — <code>SESSION_ID</code> is always treated as required even if you leave it out.</p>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">Submit your repo</div>
+        <form method="POST" action="/request-bot">
+          <div class="field">
+            <label>Repository</label>
+            <input type="text" name="repo" placeholder="yourname/your-bot" required>
+            <p class="hint">Format: owner/repository, e.g. XdKing2/MALVIN-XD.</p>
+          </div>
+          <div class="settings-field-grid" style="margin-bottom:16px">
+            <div class="field">
+              <label>Branch</label>
+              <input type="text" name="branch" placeholder="main" value="main">
+            </div>
+            <div class="field">
+              <label>Suggested deploy cost <span class="unit">JC</span></label>
+              <input type="number" name="costCoins" min="1" max="500" value="10">
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:auto;padding:11px 24px">Submit request</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="profile-tab-panel" id="tab-mine">
+      <% if (!requests.length) { %>
+        <div class="empty-state">
+          <div class="icon">📦</div>
+          <h3>No requests yet</h3>
+          <p>Submit a repo from the "New request" tab and it'll show up here.</p>
+        </div>
+      <% } %>
+      <% requests.forEach(function(r) { %>
+        <div class="panel" style="margin-bottom:12px">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:6px">
+            <div>
+              <div style="font-weight:600;color:var(--text)"><%= r.name %></div>
+              <div class="mono" style="font-size:12.5px;color:var(--text-faint)"><%= r.owner %>/<%= r.repo %> · <%= r.branch %></div>
+            </div>
+            <span class="badge badge-<%= r.status === 'approved' ? 'succeeded' : (r.status === 'rejected' ? 'failed' : 'pending') %>"><%= r.status %></span>
+          </div>
+          <% if (r.status === 'rejected' && r.review_note) { %>
+            <p style="font-size:12.5px;color:var(--text-faint);margin:8px 0 0">Reason: <%= r.review_note %></p>
+          <% } %>
+          <% if (r.status === 'pending') { %>
+            <form method="POST" action="/request-bot/<%= r.id %>/cancel" style="margin-top:10px">
+              <button type="submit" class="btn btn-ghost" style="width:auto;padding:7px 14px;font-size:12.5px">Withdraw</button>
+            </form>
+          <% } %>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+</div>
+<script>
+  document.querySelectorAll('.profile-tab-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.profile-tab-btn').forEach(function (b) { b.classList.remove('active'); });
+      document.querySelectorAll('.profile-tab-panel').forEach(function (p) { p.classList.remove('active'); });
+      btn.classList.add('active');
+      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    });
+  });
+</script>
+<%- include('partials/foot') %>

@@ -1,0 +1,140 @@
+<%- include('partials/head') %>
+<div class="dashboard-container">
+  <%- include('partials/sidebar') %>
+  <div class="main-content">
+    <div class="page-header">
+      <div class="page-header-left">
+        <h1>My Profile</h1>
+      </div>
+      <div class="page-header-actions">
+        <button class="sidebar-toggle" id="sidebarToggle" aria-label="Menu">☰</button>
+      </div>
+    </div>
+
+    <% if (flash) { %>
+      <div class="alert alert-<%= flash.type %>"><%= flash.message %></div>
+    <% } %>
+
+    <div class="profile-avatar"><%= (user.username || user.email).charAt(0).toUpperCase() %></div>
+
+    <div class="badge-row" style="justify-content:center">
+      <% if (user.is_admin) { %><span class="role-badge admin">Admin</span><% } %>
+      <% if (user.plan === 'premium') { %><span class="role-badge premium">Premium</span><% } %>
+      <% if (user.verified) { %><span class="role-badge verified">Verified</span><% } %>
+      <span class="role-badge level">⭐ <%= level.name %></span>
+    </div>
+
+    <div class="level-progress" style="max-width:420px;margin-left:auto;margin-right:auto">
+      <div class="level-progress-track">
+        <div class="level-progress-fill" style="width:<%= level.next ? Math.max(6, 100 - (level.next.pointsNeeded / (level.score + level.next.pointsNeeded || 1)) * 100) : 100 %>%"></div>
+      </div>
+      <div class="level-progress-label" style="text-align:center">
+        <% if (level.next) { %>
+          <%= level.next.pointsNeeded %> more point<%= level.next.pointsNeeded === 1 ? '' : 's' %> to reach <strong style="color:var(--text)"><%= level.next.name %></strong> · deploys count double, referrals count single
+        <% } else { %>
+          <strong style="color:var(--text)">Top level reached</strong> — thanks for building with us
+        <% } %>
+      </div>
+    </div>
+
+    <div class="profile-stat-row">
+      <div class="profile-stat"><div class="v">🪙 <%= user.coins %></div><div class="k">JC Balance</div></div>
+      <div class="profile-stat"><div class="v">#<%= user.referral_code %></div><div class="k">Referral Code</div></div>
+      <div class="profile-stat"><div class="v"><%= new Date(Number(user.created_at)).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) %></div><div class="k">Member Since</div></div>
+    </div>
+
+    <div class="profile-tabs">
+      <button class="profile-tab-btn active" data-tab="info">Information</button>
+      <button class="profile-tab-btn" data-tab="security">Security</button>
+      <button class="profile-tab-btn" data-tab="referral">Referral</button>
+    </div>
+
+    <div class="profile-tab-panel active" id="tab-info">
+      <div class="panel">
+        <div class="panel-title">Profile information</div>
+        <form method="POST" action="/my-profile/username" style="margin-bottom:18px">
+          <div class="field">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" value="<%= user.username %>" minlength="3" maxlength="20" pattern="[a-z0-9_]{3,20}" title="3-20 characters: lowercase letters, numbers, and underscores only" required>
+            <p class="hint">Lowercase letters, numbers, and underscores only.</p>
+          </div>
+          <button type="submit" class="btn btn-secondary" style="width:auto;padding:10px 20px">Save username</button>
+        </form>
+        <div class="field" style="margin-bottom:0">
+          <label>Email</label>
+          <div class="readonly-field"><%= user.email %></div>
+          <p class="hint">Email isn't editable — contact support if you need it changed.</p>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">Deployment activity</div>
+        <div class="profile-stat-row" style="margin:0">
+          <div class="profile-stat"><div class="v"><%= deployStats.total %></div><div class="k">Total Bots</div></div>
+          <div class="profile-stat"><div class="v"><%= deployStats.active %></div><div class="k">Active</div></div>
+          <div class="profile-stat"><div class="v"><%= referralCount %></div><div class="k">Referrals</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="profile-tab-panel" id="tab-security">
+      <div class="panel">
+        <div class="panel-title">Change password</div>
+        <form method="POST" action="/my-profile/password">
+          <div class="field">
+            <label for="current_password">Current password</label>
+            <input type="password" id="current_password" name="current_password" required>
+          </div>
+          <div class="field">
+            <label for="new_password">New password</label>
+            <input type="password" id="new_password" name="new_password" minlength="8" required>
+          </div>
+          <div class="field">
+            <label for="confirm_password">Confirm new password</label>
+            <input type="password" id="confirm_password" name="confirm_password" minlength="8" required>
+          </div>
+          <button type="submit" class="btn btn-primary">Update password</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="profile-tab-panel" id="tab-referral">
+      <div class="panel referral-panel">
+        <div class="panel-title">Referral program</div>
+        <p style="margin-bottom:14px">Share your link — you and your friend each get <strong style="color:var(--text)"><%= referralBonus %> JC</strong> once they verify their account.</p>
+        <div class="referral-row">
+          <span class="link-text" id="refLink"><%= referralLink %></span>
+          <button class="copy-btn" id="copyRefBtn" type="button">Copy</button>
+        </div>
+      </div>
+      <div class="profile-stat-row">
+        <div class="profile-stat"><div class="v"><%= referralCount %></div><div class="k">People Referred</div></div>
+        <div class="profile-stat"><div class="v">🪙 <%= referralCoinsEarned %></div><div class="k">JC Earned</div></div>
+        <div class="profile-stat"><div class="v"><%= level.name %></div><div class="k">Current Level</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  document.querySelectorAll('.profile-tab-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.profile-tab-btn').forEach(function (b) { b.classList.remove('active'); });
+      document.querySelectorAll('.profile-tab-panel').forEach(function (p) { p.classList.remove('active'); });
+      btn.classList.add('active');
+      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  var copyBtn = document.getElementById('copyRefBtn');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', function () {
+      var text = document.getElementById('refLink').textContent;
+      navigator.clipboard.writeText(text).then(function () {
+        var original = copyBtn.textContent;
+        copyBtn.textContent = 'Copied!';
+        setTimeout(function () { copyBtn.textContent = original; }, 1500);
+      });
+    });
+  }
+</script>
+<%- include('partials/foot') %>

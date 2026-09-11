@@ -1,0 +1,104 @@
+<%- include('partials/head') %>
+<div class="dashboard-container">
+  <%- include('partials/sidebar') %>
+  <div class="main-content">
+    <div class="page-header">
+      <div class="page-header-left">
+        <h1>Deployments</h1>
+      </div>
+      <div class="page-header-actions">
+        <button class="sidebar-toggle" id="sidebarToggle" aria-label="Menu">☰</button>
+      </div>
+    </div>
+
+    <% if (flash) { %>
+      <div class="alert alert-<%= flash.type %>"><%= flash.message %></div>
+    <% } %>
+
+    <div class="badge-row" style="margin-bottom:16px;gap:8px">
+      <a href="/admin/deployments?status=" class="badge badge-succeeded" style="<%= status ? 'opacity:.45' : '' %>">All <%= statusCounts.pending + statusCounts.succeeded + statusCounts.failed + statusCounts.stopped %></a>
+      <a href="/admin/deployments?status=succeeded" class="badge badge-succeeded" style="<%= status && status !== 'succeeded' ? 'opacity:.45' : '' %>">Succeeded <%= statusCounts.succeeded %></a>
+      <a href="/admin/deployments?status=pending" class="badge badge-pending" style="<%= status && status !== 'pending' ? 'opacity:.45' : '' %>">Pending <%= statusCounts.pending %></a>
+      <a href="/admin/deployments?status=stopped" class="badge badge-stopped" style="<%= status && status !== 'stopped' ? 'opacity:.45' : '' %>">Stopped <%= statusCounts.stopped %></a>
+      <a href="/admin/deployments?status=failed" class="badge badge-failed" style="<%= status && status !== 'failed' ? 'opacity:.45' : '' %>">Failed <%= statusCounts.failed %></a>
+    </div>
+
+    <form method="GET" action="/admin/deployments" class="users-search-row">
+      <input type="text" name="q" placeholder="Search app name, user email, or bot…" value="<%= search %>">
+      <input type="hidden" name="status" value="<%= status %>">
+      <button type="submit" class="btn btn-primary" style="width:auto;padding:10px 18px">Search</button>
+    </form>
+
+    <div class="users-meta"><%= total %> deployment<%= total === 1 ? '' : 's' %><%= status ? ` — ${status}` : '' %><%= search ? ` matching "${search}"` : '' %></div>
+
+    <div class="users-table-wrap">
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>App</th>
+            <th>User</th>
+            <th>Status</th>
+            <th>Deployed</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (!deployments.length) { %>
+          <tr><td colspan="5" style="text-align:center;color:var(--text-faint);padding:30px">No deployments found.</td></tr>
+          <% } %>
+          <% deployments.forEach(function(d) { %>
+          <tr>
+            <td>
+              <div class="mono" style="color:var(--text)"><%= d.app_name %></div>
+              <div style="font-size:12px;color:var(--text-faint)"><%= d.bot_slug %></div>
+            </td>
+            <td>
+              <div class="email-cell">
+                <div class="mini-avatar"><%= (d.user_username || d.user_email).charAt(0).toUpperCase() %></div>
+                <span><%= d.user_username || d.user_email %></span>
+              </div>
+            </td>
+            <td><span class="badge badge-<%= d.status %>"><%= d.status %></span></td>
+            <td><%= new Date(Number(d.created_at)).toLocaleDateString() %></td>
+            <td>
+              <div class="row-actions">
+                <% if (d.status === 'succeeded') { %>
+                <form method="POST" action="/admin/deployments/<%= d.id %>/stop">
+                  <button type="submit">Stop</button>
+                </form>
+                <% } else if (d.status === 'stopped') { %>
+                <form method="POST" action="/admin/deployments/<%= d.id %>/resume">
+                  <button type="submit">Resume</button>
+                </form>
+                <% } %>
+                <% if (d.status === 'succeeded' || d.status === 'stopped') { %>
+                <a href="/my-bots/<%= d.id %>/logs"><button type="button">Logs</button></a>
+                <% } %>
+                <form method="POST" action="/admin/deployments/<%= d.id %>/delete" class="confirm-delete-deployment">
+                  <button type="submit" class="danger">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+
+    <% if (totalPages > 1) { %>
+    <div class="pagination">
+      <a class="<%= page <= 1 ? 'disabled' : '' %>" href="/admin/deployments?q=<%= encodeURIComponent(search) %>&status=<%= encodeURIComponent(status) %>&page=<%= page - 1 %>">‹</a>
+      <span class="current"><%= page %> / <%= totalPages %></span>
+      <a class="<%= page >= totalPages ? 'disabled' : '' %>" href="/admin/deployments?q=<%= encodeURIComponent(search) %>&status=<%= encodeURIComponent(status) %>&page=<%= page + 1 %>">›</a>
+    </div>
+    <% } %>
+  </div>
+</div>
+<script>
+  document.querySelectorAll('.confirm-delete-deployment').forEach(function (form) {
+    form.addEventListener('submit', function (e) {
+      if (!confirm('Delete this deployment? This removes it on Heroku too and cannot be undone.')) e.preventDefault();
+    });
+  });
+</script>
+<%- include('partials/foot') %>

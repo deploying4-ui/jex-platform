@@ -1,0 +1,110 @@
+<%- include('partials/head') %>
+<div class="dashboard-container">
+  <%- include('partials/sidebar') %>
+  <div class="main-content">
+    <div class="page-header">
+      <div class="page-header-left">
+        <h1>Payment status</h1>
+      </div>
+      <div class="page-header-actions">
+        <button class="sidebar-toggle" id="sidebarToggle" aria-label="Menu">☰</button>
+      </div>
+    </div>
+
+    <% if (flash) { %>
+      <div class="alert alert-<%= flash.type %>"><%= flash.message %></div>
+    <% } %>
+
+    <div class="panel" style="max-width:440px">
+      <p style="margin-bottom:8px">Package: <strong style="color:var(--text)"><%= payment.coins %> JC</strong></p>
+      <p style="margin-bottom:8px">Amount: <strong style="color:var(--text)"><%= Number(payment.amount_ugx).toLocaleString() %> UGX</strong></p>
+      <p style="margin-bottom:16px">Phone: <strong class="mono" style="color:var(--text)"><%= payment.phone_number %></strong></p>
+      <p style="margin-bottom:16px">
+        Status:
+        <strong id="statusText" style="text-transform:uppercase">
+          <% if (payment.status === 'completed') { %>
+            <span style="color:var(--success)">Completed</span>
+          <% } else if (payment.status === 'failed') { %>
+            <span style="color:var(--danger)">Failed</span>
+          <% } else { %>
+            <span style="color:var(--warn)">Waiting for approval…</span>
+          <% } %>
+        </strong>
+      </p>
+
+      <div id="pendingHint" style="<%= payment.status === 'pending' ? '' : 'display:none' %>">
+        <p style="font-size:13px;color:var(--text-faint);margin-bottom:12px">
+          Check your phone and approve the Mobile Money prompt. This page updates automatically.
+        </p>
+      </div>
+
+      <div id="successBox" style="<%= payment.status === 'completed' ? '' : 'display:none' %>">
+        <div class="alert alert-success">
+          Payment successful! <strong id="creditedCoins"><%= payment.coins %></strong> JC have been added.
+          New balance: <strong id="newBalance"><%= user.coins %></strong> JC.
+        </div>
+        <a href="/dashboard" class="btn btn-primary" style="margin-top:8px;max-width:220px">Go to dashboard</a>
+      </div>
+
+      <div id="failedBox" style="<%= payment.status === 'failed' ? '' : 'display:none' %>">
+        <div class="alert alert-error">
+          Payment failed<%= payment.failure_message ? ': ' + payment.failure_message : '' %>.
+          You were not charged. Try again.
+        </div>
+        <a href="/topup" class="btn btn-primary" style="margin-top:8px;max-width:220px">Try again</a>
+      </div>
+    </div>
+  </div>
+</div>
+<% if (payment.status === 'pending') { %>
+<script>
+(function () {
+  var paymentId = <%- JSON.stringify(String(payment.id)) %>;
+  var tries = 0;
+  var maxTries = 120; // ~5 min at 2.5s
+
+  function updateUI(data) {
+    var statusEl = document.getElementById('statusText');
+    var pending = document.getElementById('pendingHint');
+    var success = document.getElementById('successBox');
+    var failed = document.getElementById('failedBox');
+
+    if (data.status === 'completed') {
+      statusEl.innerHTML = '<span style="color:var(--success)">Completed</span>';
+      pending.style.display = 'none';
+      success.style.display = '';
+      failed.style.display = 'none';
+      document.getElementById('creditedCoins').textContent = data.coins;
+      document.getElementById('newBalance').textContent = data.balance;
+      return true;
+    }
+    if (data.status === 'failed') {
+      statusEl.innerHTML = '<span style="color:var(--danger)">Failed</span>';
+      pending.style.display = 'none';
+      success.style.display = 'none';
+      failed.style.display = '';
+      return true;
+    }
+    return false;
+  }
+
+  function poll() {
+    tries += 1;
+    if (tries > maxTries) return;
+    fetch('/topup/status/' + paymentId + '/json', { credentials: 'same-origin' })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (!updateUI(data)) {
+          setTimeout(poll, 2500);
+        }
+      })
+      .catch(function () {
+        setTimeout(poll, 4000);
+      });
+  }
+
+  setTimeout(poll, 2500);
+})();
+</script>
+<% } %>
+<%- include('partials/foot') %>

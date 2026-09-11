@@ -1,0 +1,155 @@
+<%- include('partials/head') %>
+<div class="dashboard-container">
+  <%- include('partials/sidebar') %>
+  <div class="main-content" style="padding-bottom:90px">
+    <div class="page-header">
+      <div class="page-header-left">
+        <h1>Settings</h1>
+      </div>
+      <div class="page-header-actions">
+        <button class="sidebar-toggle" id="sidebarToggle" aria-label="Menu">☰</button>
+      </div>
+    </div>
+    <p style="margin-top:-14px;margin-bottom:20px">Every value here overrides the .env defaults and takes effect immediately — no restart needed. Set anything to 0 to switch that cost off.</p>
+
+    <% if (flash) { %>
+      <div class="alert alert-<%= flash.type %>"><%= flash.message %></div>
+    <% } %>
+
+    <form method="POST" action="/admin/settings" id="settingsForm">
+      <div class="profile-tabs">
+        <button type="button" class="profile-tab-btn active" data-tab="deploy">Deploy &amp; renewal</button>
+        <button type="button" class="profile-tab-btn" data-tab="coins">Starter &amp; referral</button>
+        <button type="button" class="profile-tab-btn" data-tab="claim">Daily claim</button>
+        <button type="button" class="profile-tab-btn" data-tab="premium">Premium</button>
+        <button type="button" class="profile-tab-btn" data-tab="packages">Package expiry</button>
+      </div>
+
+      <div class="profile-tab-panel active" id="tab-deploy">
+        <div class="settings-group">
+          <h3>Deploy &amp; renewal</h3>
+          <p class="settings-desc">What it costs to keep a bot online. Per-bot deploy prices themselves live in the bot catalog — this is the number shown on the My Coins page.</p>
+          <div class="settings-field-grid">
+            <div class="field">
+              <label>Deploy cost <span class="unit">JC</span></label>
+              <input type="number" name="deployCostCoins" min="0" value="<%= values.deployCostCoins %>">
+            </div>
+            <div class="field">
+              <label>Renewal cost <span class="unit">JC</span></label>
+              <input type="number" name="renewalCostCoins" min="0" value="<%= values.renewalCostCoins %>">
+            </div>
+            <div class="field">
+              <label>Renewal period <span class="unit">hours</span></label>
+              <input type="number" name="renewalPeriodHours" min="1" value="<%= values.renewalPeriodHours %>">
+            </div>
+            <div class="field">
+              <label>Max bot slots <span class="unit">per user</span></label>
+              <input type="number" name="maxBotsPerUser" min="1" value="<%= values.maxBotsPerUser %>">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="profile-tab-panel" id="tab-coins">
+        <div class="settings-group">
+          <h3>Starter &amp; referral coins</h3>
+          <p class="settings-desc">New accounts get starter coins once. Referrals pay both the referrer and the new user the same bonus.</p>
+          <div class="settings-field-grid">
+            <div class="field">
+              <label>Starter coins <span class="unit">JC</span></label>
+              <input type="number" name="starterCoins" min="0" value="<%= values.starterCoins %>">
+            </div>
+            <div class="field">
+              <label>Starter coins expire <span class="unit">days</span></label>
+              <input type="number" name="starterCoinsExpiryDays" min="1" value="<%= values.starterCoinsExpiryDays %>">
+            </div>
+            <div class="field">
+              <label>Referral bonus <span class="unit">JC each</span></label>
+              <input type="number" name="referralBonusCoins" min="0" value="<%= values.referralBonusCoins %>">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="profile-tab-panel" id="tab-claim">
+        <div class="settings-group">
+          <h3>Daily claim</h3>
+          <p class="settings-desc">The free coins button on the dashboard.</p>
+          <div class="settings-field-grid">
+            <div class="field">
+              <label>Claim amount <span class="unit">JC</span></label>
+              <input type="number" name="dailyClaimCoins" min="0" value="<%= values.dailyClaimCoins %>">
+            </div>
+            <div class="field">
+              <label>Claim cooldown <span class="unit">hours</span></label>
+              <input type="number" name="dailyClaimPeriodHours" min="1" value="<%= values.dailyClaimPeriodHours %>">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="profile-tab-panel" id="tab-premium">
+        <div class="settings-group">
+          <h3>Premium plan</h3>
+          <p class="settings-desc">Applied to any user with the Premium plan toggled on from Admin → Users.</p>
+          <div class="settings-field-grid">
+            <div class="field">
+              <label>Premium renewal cost <span class="unit">JC</span></label>
+              <input type="number" name="premiumRenewalCostCoins" min="0" value="<%= values.premiumRenewalCostCoins %>">
+            </div>
+            <div class="field">
+              <label>Bonus bot slots <span class="unit">extra</span></label>
+              <input type="number" name="premiumBonusSlots" min="0" value="<%= values.premiumBonusSlots %>">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="profile-tab-panel" id="tab-packages">
+        <div class="settings-group">
+          <h3>Top-up package expiry</h3>
+          <p class="settings-desc">How long purchased coin packages last before they expire unused.</p>
+          <div class="settings-field-grid">
+            <div class="field">
+              <label>Small packages <span class="unit">days</span></label>
+              <input type="number" name="smallPackageExpiryDays" min="1" value="<%= values.smallPackageExpiryDays %>">
+            </div>
+            <div class="field">
+              <label>Large packages <span class="unit">days</span></label>
+              <input type="number" name="largePackageExpiryDays" min="1" value="<%= values.largePackageExpiryDays %>">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-savebar" id="settingsSavebar">
+        <span id="settingsDirtyLabel" style="font-size:12.5px;color:var(--text-faint)">No changes yet</span>
+        <button type="submit" class="btn btn-primary" style="width:auto;padding:11px 24px">Save settings</button>
+      </div>
+    </form>
+  </div>
+</div>
+<script>
+  (function () {
+    document.querySelectorAll('.profile-tab-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('.profile-tab-btn').forEach(function (b) { b.classList.remove('active'); });
+        document.querySelectorAll('.profile-tab-panel').forEach(function (p) { p.classList.remove('active'); });
+        btn.classList.add('active');
+        document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+      });
+    });
+
+    // Purely visual nudge — highlights the save bar once any field
+    // changes, so it's obvious there's something to save across tabs
+    // the admin might not currently be looking at.
+    var form = document.getElementById('settingsForm');
+    var savebar = document.getElementById('settingsSavebar');
+    var dirtyLabel = document.getElementById('settingsDirtyLabel');
+    form.addEventListener('input', function () {
+      savebar.classList.add('dirty');
+      dirtyLabel.textContent = 'Unsaved changes';
+    });
+  })();
+</script>
+<%- include('partials/foot') %>

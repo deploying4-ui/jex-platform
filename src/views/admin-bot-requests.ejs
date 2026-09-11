@@ -1,0 +1,81 @@
+<%- include('partials/head') %>
+<div class="dashboard-container">
+  <%- include('partials/sidebar') %>
+  <div class="main-content">
+    <div class="page-header">
+      <div class="page-header-left">
+        <h1>Bot Requests</h1>
+      </div>
+      <div class="page-header-actions">
+        <button class="sidebar-toggle" id="sidebarToggle" aria-label="Menu">☰</button>
+      </div>
+    </div>
+
+    <% if (flash) { %>
+      <div class="alert alert-<%= flash.type %>"><%= flash.message %></div>
+    <% } %>
+
+    <div class="badge-row" style="margin-bottom:16px;gap:8px">
+      <a href="/admin/bot-requests?status=" class="badge badge-pending" style="<%= status ? 'opacity:.45' : '' %>">All</a>
+      <a href="/admin/bot-requests?status=pending" class="badge badge-pending" style="<%= status && status !== 'pending' ? 'opacity:.45' : '' %>">Pending <%= pendingCount %></a>
+      <a href="/admin/bot-requests?status=approved" class="badge badge-succeeded" style="<%= status && status !== 'approved' ? 'opacity:.45' : '' %>">Approved</a>
+      <a href="/admin/bot-requests?status=rejected" class="badge badge-failed" style="<%= status && status !== 'rejected' ? 'opacity:.45' : '' %>">Rejected</a>
+    </div>
+
+    <div class="users-meta"><%= total %> request<%= total === 1 ? '' : 's' %><%= status ? ` — ${status}` : '' %></div>
+
+    <% if (!requests.length) { %>
+      <div class="empty-state">
+        <div class="icon">📦</div>
+        <h3>No requests here</h3>
+      </div>
+    <% } %>
+
+    <% requests.forEach(function(r) { %>
+      <div class="bot-row-card">
+        <div class="bot-row-top">
+          <div class="bot-row-left">
+            <div class="bot-icon b1"><%= r.name.charAt(0).toUpperCase() %></div>
+            <div class="bot-row-meta">
+              <div class="app-name"><%= r.name %></div>
+              <div class="bot-slug"><%= r.owner %>/<%= r.repo %> · <%= r.branch %> · by <%= r.user_username || r.user_email %></div>
+            </div>
+          </div>
+          <span class="badge badge-<%= r.status === 'approved' ? 'succeeded' : (r.status === 'rejected' ? 'failed' : 'pending') %>"><%= r.status %></span>
+        </div>
+
+        <% if (r.tagline) { %><p style="font-size:12.5px;color:var(--text-dim);margin:10px 0 0"><%= r.tagline %></p><% } %>
+        <% if (r.documentation_link) { %><p style="font-size:12px;margin:4px 0 0"><a href="<%= r.documentation_link %>" target="_blank" rel="noopener" style="color:var(--accent)">Documentation ↗</a></p><% } %>
+        <% if (r.status === 'rejected' && r.review_note) { %>
+          <p style="font-size:12.5px;color:var(--text-faint);margin:8px 0 0">Rejected: <%= r.review_note %></p>
+        <% } %>
+        <% if (r.status === 'approved') { %>
+          <p style="font-size:12.5px;color:var(--text-faint);margin:8px 0 0">Live in the catalog as <code><%= r.slug %></code> at <%= r.cost_coins %> JC.</p>
+        <% } %>
+
+        <% if (r.status === 'pending') { %>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid var(--border-soft)">
+          <form method="POST" action="/admin/bot-requests/<%= r.id %>/approve" style="display:flex;gap:8px;align-items:center">
+            <label style="font-size:12px;color:var(--text-faint)">Cost <span class="unit">JC</span></label>
+            <input type="number" name="costCoins" min="1" max="500" value="<%= r.cost_coins %>" style="width:70px;padding:8px 10px">
+            <button type="submit" class="btn btn-primary" style="width:auto;padding:9px 16px;font-size:13px">Approve</button>
+          </form>
+          <form method="POST" action="/admin/bot-requests/<%= r.id %>/reject" style="display:flex;gap:8px;align-items:center;flex:1;min-width:220px">
+            <input type="text" name="reviewNote" placeholder="Rejection reason (optional)" style="flex:1;padding:8px 10px">
+            <button type="submit" class="btn btn-ghost" style="width:auto;padding:9px 16px;font-size:13px;color:var(--danger)">Reject</button>
+          </form>
+        </div>
+        <% } %>
+      </div>
+    <% }) %>
+
+    <% if (totalPages > 1) { %>
+    <div class="pagination">
+      <a class="<%= page <= 1 ? 'disabled' : '' %>" href="/admin/bot-requests?status=<%= encodeURIComponent(status) %>&page=<%= page - 1 %>">‹</a>
+      <span class="current"><%= page %> / <%= totalPages %></span>
+      <a class="<%= page >= totalPages ? 'disabled' : '' %>" href="/admin/bot-requests?status=<%= encodeURIComponent(status) %>&page=<%= page + 1 %>">›</a>
+    </div>
+    <% } %>
+  </div>
+</div>
+<%- include('partials/foot') %>

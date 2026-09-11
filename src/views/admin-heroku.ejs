@@ -1,0 +1,108 @@
+<%- include('partials/head') %>
+<div class="dashboard-container">
+  <%- include('partials/sidebar') %>
+  <div class="main-content">
+    <div class="page-header">
+      <div class="page-header-left">
+        <h1>Heroku Accounts</h1>
+      </div>
+      <div class="page-header-actions">
+        <button class="sidebar-toggle" id="sidebarToggle" aria-label="Menu">☰</button>
+      </div>
+    </div>
+    <p style="margin-top:-14px;margin-bottom:20px">Deploys are spread across every active account below. Each app stays tied to the account it was created on for restarts, rebuilds, and deletes.</p>
+
+    <% if (flash) { %>
+      <div class="alert alert-<%= flash.type %>"><%= flash.message %></div>
+    <% } %>
+
+    <div class="heroku-stats">
+      <div class="heroku-stat"><div class="value"><%= activeAccountCount %></div><div class="label">Active accounts</div></div>
+      <div class="heroku-stat"><div class="value"><%= totalUsed %></div><div class="label">Apps deployed</div></div>
+      <div class="heroku-stat"><div class="value"><%= totalCapacity %></div><div class="label">Total capacity</div></div>
+      <div class="heroku-stat"><div class="value"><%= availableCapacity %></div><div class="label">Capacity left</div></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Add an account</div>
+      <form method="POST" action="/admin/heroku">
+        <div class="field">
+          <label for="label">Label (e.g. the Heroku account's email)</label>
+          <input type="text" id="label" name="label" placeholder="ops@example.com" required>
+        </div>
+        <div class="field">
+          <label for="api_key">Heroku API key</label>
+          <input type="password" id="api_key" name="api_key" class="mono-field" placeholder="Paste the key from dashboard.heroku.com/account" required>
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label for="max_apps">App limit on this account</label>
+          <input type="number" id="max_apps" name="max_apps" min="1" max="200" value="10" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="margin-top:16px">Add to pool</button>
+      </form>
+    </div>
+
+    <div class="panel-title" style="margin:24px 0 12px">Accounts (<%= accounts.length %>)</div>
+
+    <% if (!accounts.length) { %>
+      <div class="alert alert-warning">No Heroku accounts added yet — deploys will fall back to HEROKU_API_KEY in .env, if set.</div>
+    <% } %>
+
+    <% accounts.forEach(function(acc) { %>
+    <% var pct = Math.min(100, Math.round((acc.used_count / acc.max_apps) * 100)); %>
+    <div class="heroku-account-card">
+      <div class="heroku-account-head">
+        <h3><%= acc.label %></h3>
+        <div class="badge-row" style="margin:0">
+          <span class="status-dot <%= acc.is_active ? 'on' : 'off' %>"><%= acc.is_active ? 'Active' : 'Disabled' %></span>
+        </div>
+      </div>
+      <div class="heroku-account-key">•••• <%= acc.api_key.slice(-6) %></div>
+      <div class="heroku-capacity-track"><div class="heroku-capacity-fill <%= pct >= 100 ? 'full' : '' %>" style="width:<%= pct %>%"></div></div>
+      <div class="heroku-capacity-label"><%= acc.used_count %> / <%= acc.max_apps %> apps used</div>
+
+      <div class="heroku-account-actions">
+        <button type="button" class="btn btn-secondary btn-sm toggle-edit" data-target="edit-<%= acc.id %>">Edit</button>
+        <form method="POST" action="/admin/heroku/<%= acc.id %>/validate">
+          <button type="submit" class="btn btn-secondary btn-sm">Validate key</button>
+        </form>
+        <form method="POST" action="/admin/heroku/<%= acc.id %>/delete" onsubmit="return confirm('Remove this account from the pool?');">
+          <button type="submit" class="btn btn-secondary btn-sm" style="color:var(--danger)">Remove</button>
+        </form>
+      </div>
+
+      <div class="heroku-account-edit" id="edit-<%= acc.id %>">
+        <form method="POST" action="/admin/heroku/<%= acc.id %>/update">
+          <div class="field-grid" style="margin-bottom:12px">
+            <div class="field" style="margin-bottom:0">
+              <label>Label</label>
+              <input type="text" name="label" value="<%= acc.label %>" required>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label>App limit</label>
+              <input type="number" name="max_apps" min="1" max="200" value="<%= acc.max_apps %>" required>
+            </div>
+          </div>
+          <div class="field">
+            <label>New API key <span style="color:var(--text-faint);font-weight:400">(leave blank to keep current)</span></label>
+            <input type="password" name="api_key" class="mono-field" placeholder="••••••••••••••••">
+          </div>
+          <div class="checkbox-row">
+            <input type="checkbox" id="active-<%= acc.id %>" name="is_active" <%= acc.is_active ? 'checked' : '' %>>
+            <label for="active-<%= acc.id %>">Active — eligible for new deploys</label>
+          </div>
+          <button type="submit" class="btn btn-primary btn-sm">Save changes</button>
+        </form>
+      </div>
+    </div>
+    <% }) %>
+  </div>
+</div>
+<script>
+  document.querySelectorAll('.toggle-edit').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.getElementById(btn.dataset.target).classList.toggle('open');
+    });
+  });
+</script>
+<%- include('partials/foot') %>

@@ -1,0 +1,30 @@
+{
+  "bot-name": "Your Bot Name",
+  "owner-verification": "your-jex-platform-account-email@example.com",
+  "tagline": "One short line describing your bot",
+  "documentation-link": "https://github.com/you/your-repo#readme",
+  "session-helper-url": "",
+
+  "env": {
+    "SESSION_ID": {
+      "description": "Paired WhatsApp session string for this bot",
+      "required": true,
+      "value": ""
+    },
+    "BOT_NAME": {
+      "description": "Display name shown in the bot's own replies",
+      "required": false,
+      "value": "My Bot"
+    },
+    "OWNER_NUMBER": {
+      "description": "Owner's WhatsApp number, digits only, with country code",
+      "required": false,
+      "value": ""
+    },
+    "MODE": {
+      "description": "'public' to respond to everyone, 'private' to respond to the owner only",
+      "required": false,
+      "value": "public"
+    }
+  }
+}

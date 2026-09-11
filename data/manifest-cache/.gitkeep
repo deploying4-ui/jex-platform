@@ -1,0 +1,3 @@
+Cached jexhost.json copies go here (one file per bot slug, e.g. vesper-xmd.json)
+as a fallback if a live GitHub fetch ever fails. Empty for now — the old
+app.json caches were removed since every bot's manifest is jexhost.json now.

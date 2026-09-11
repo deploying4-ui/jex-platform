@@ -1,0 +1,115 @@
+<%- include('partials/head') %>
+<div class="dashboard-container">
+  <%- include('partials/sidebar') %>
+  <div class="main-content">
+    <div class="page-header">
+      <div class="page-header-left">
+        <h1>My Bots</h1>
+      </div>
+      <div class="page-header-actions">
+        <a href="/deploy" class="btn btn-primary">+ Deploy Bot</a>
+        <button class="sidebar-toggle" id="sidebarToggle" aria-label="Menu">☰</button>
+      </div>
+    </div>
+    <p style="margin-top:-14px;margin-bottom:20px">Manage everything you've deployed — edit, restart, redeploy, stop, or delete.</p>
+
+    <% if (flash) { %>
+      <div class="alert alert-<%= flash.type %>"><%= flash.message %></div>
+    <% } %>
+
+    <% if (!deployments.length) { %>
+      <div class="empty-state">
+        <div class="icon">🤖</div>
+        <h3>No bots deployed yet</h3>
+        <p>Once you deploy one, it'll show up here for you to manage.</p>
+        <a href="/deploy" class="btn btn-primary" style="max-width:220px;margin:0 auto">⚡ Deploy a bot</a>
+      </div>
+    <% } %>
+
+    <div class="bot-instance-grid">
+      <% deployments.forEach(function(d) { %>
+        <div class="bot-instance-card">
+          <div class="bot-instance-top">
+            <div class="bot-instance-identity">
+              <div class="bot-icon <%= d.bot ? d.bot.cssClass : 'b1' %>"><%= d.bot ? d.bot.initial : '?' %></div>
+              <div class="bot-instance-meta">
+                <div class="app-name" title="<%= d.app_name %>"><%= d.app_name %></div>
+                <div class="bot-slug"><%= d.bot ? d.bot.name : d.bot_slug %></div>
+              </div>
+            </div>
+            <div class="bot-instance-side">
+              <span class="badge badge-<%= d.status %>"><%= d.status %></span>
+              <div class="row-menu" data-row-id="<%= d.id %>">
+                <button class="row-dots" type="button" aria-label="Actions">⋮</button>
+                <div class="row-dropdown">
+                  <a class="row-action" href="/deploy/status/<%= d.id %>">Edit session ID</a>
+                  <% if (d.status === 'succeeded') { %>
+                    <form method="POST" action="/my-bots/<%= d.id %>/redeploy"><button class="row-action" type="submit">Redeploy latest code</button></form>
+                    <form method="POST" action="/my-bots/<%= d.id %>/stop"><button class="row-action" type="submit">Stop app</button></form>
+                  <% } %>
+                  <div class="corner-divider"></div>
+                  <form method="POST" action="/my-bots/<%= d.id %>/delete" class="confirm-delete">
+                    <button class="row-action danger" type="submit">Delete</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <% if (d.failure_message) { %>
+            <p class="bot-instance-failure"><%= d.failure_message %></p>
+          <% } %>
+
+          <div class="bot-instance-actions">
+            <% if (d.status === 'succeeded') { %>
+              <a class="btn btn-secondary" href="/my-bots/<%= d.id %>/logs">View logs</a>
+              <form method="POST" action="/my-bots/<%= d.id %>/restart" style="flex:1;display:flex">
+                <button class="btn btn-ghost" type="submit" style="width:100%">Restart</button>
+              </form>
+              <% if (d.heroku_app_url) { %>
+                <a class="btn btn-ghost" href="<%= d.heroku_app_url %>" target="_blank" rel="noopener">Open</a>
+              <% } %>
+            <% } else if (d.status === 'stopped') { %>
+              <a class="btn btn-secondary" href="/my-bots/<%= d.id %>/logs">View logs</a>
+              <form method="POST" action="/my-bots/<%= d.id %>/resume" style="flex:1;display:flex">
+                <button class="btn btn-primary" type="submit" style="width:100%">Resume</button>
+              </form>
+            <% } else if (d.status === 'pending') { %>
+              <a class="btn btn-secondary" href="/deploy/status/<%= d.id %>" style="flex:1">View deploy status</a>
+            <% } else { %>
+              <a class="btn btn-ghost" href="/deploy/status/<%= d.id %>" style="flex:1">View details</a>
+            <% } %>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+</div>
+<script>
+  (function () {
+    document.addEventListener('click', function (e) {
+      var dotsBtn = e.target.closest('.row-dots');
+      var openMenus = document.querySelectorAll('.row-menu.open');
+
+      if (dotsBtn) {
+        var menu = dotsBtn.closest('.row-menu');
+        var wasOpen = menu.classList.contains('open');
+        openMenus.forEach(function (m) { m.classList.remove('open'); });
+        if (!wasOpen) menu.classList.add('open');
+        e.stopPropagation();
+        return;
+      }
+
+      if (!e.target.closest('.row-dropdown')) {
+        openMenus.forEach(function (m) { m.classList.remove('open'); });
+      }
+    });
+
+    document.querySelectorAll('.confirm-delete').forEach(function (form) {
+      form.addEventListener('submit', function (e) {
+        if (!confirm('Delete this app? This cannot be undone.')) e.preventDefault();
+      });
+    });
+  })();
+</script>
+<%- include('partials/foot') %>

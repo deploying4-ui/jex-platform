@@ -1,0 +1,72 @@
+<%- include('partials/head') %>
+<div class="dashboard-container">
+  <%- include('partials/sidebar') %>
+  <div class="main-content">
+    <div class="page-header">
+      <div class="page-header-left">
+        <h1>Support Tickets</h1>
+      </div>
+      <div class="page-header-actions">
+        <button class="sidebar-toggle" id="sidebarToggle" aria-label="Menu">☰</button>
+      </div>
+    </div>
+
+    <% if (flash) { %>
+      <div class="alert alert-<%= flash.type %>"><%= flash.message %></div>
+    <% } %>
+
+    <form method="GET" action="/admin/support" class="users-search-row">
+      <input type="text" name="q" placeholder="Search by email or subject…" value="<%= search %>">
+      <button type="submit" class="btn btn-primary" style="width:auto;padding:10px 18px">Search</button>
+    </form>
+
+    <div class="btn-row" style="margin:14px 0">
+      <a href="/admin/support" class="btn <%= !status ? 'btn-primary' : 'btn-secondary' %>" style="width:auto">All</a>
+      <a href="/admin/support?status=open" class="btn <%= status === 'open' ? 'btn-primary' : 'btn-secondary' %>" style="width:auto">Open</a>
+      <a href="/admin/support?status=closed" class="btn <%= status === 'closed' ? 'btn-primary' : 'btn-secondary' %>" style="width:auto">Closed</a>
+    </div>
+
+    <div class="users-meta"><%= total %> ticket<%= total === 1 ? '' : 's' %><%= search ? ` matching "${search}"` : '' %></div>
+
+    <div class="users-table-wrap">
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>Subject</th>
+            <th>User</th>
+            <th>Status</th>
+            <th>Updated</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (!tickets.length) { %>
+          <tr><td colspan="5" style="text-align:center;color:var(--text-faint);padding:30px">No tickets found.</td></tr>
+          <% } %>
+          <% tickets.forEach(function (t) { %>
+          <tr>
+            <td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><%= t.subject %></td>
+            <td><%= t.user_email %></td>
+            <td><span class="badge badge-<%= t.status %>"><%= t.status === 'open' ? 'Open' : 'Closed' %></span></td>
+            <td><%= new Date(Number(t.updated_at)).toLocaleDateString() %></td>
+            <td>
+              <div class="row-actions">
+                <a href="/admin/support/<%= t.id %>"><button type="button">View</button></a>
+              </div>
+            </td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+
+    <% if (totalPages > 1) { %>
+    <div class="pagination">
+      <a class="<%= page <= 1 ? 'disabled' : '' %>" href="/admin/support?q=<%= encodeURIComponent(search) %>&status=<%= status %>&page=<%= page - 1 %>">‹</a>
+      <span class="current"><%= page %> / <%= totalPages %></span>
+      <a class="<%= page >= totalPages ? 'disabled' : '' %>" href="/admin/support?q=<%= encodeURIComponent(search) %>&status=<%= status %>&page=<%= page + 1 %>">›</a>
+    </div>
+    <% } %>
+  </div>
+</div>
+<%- include('partials/foot') %>

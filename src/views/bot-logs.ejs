@@ -1,0 +1,38 @@
+<%- include('partials/head') %>
+<div class="dashboard-container">
+  <%- include('partials/sidebar') %>
+  <div class="main-content">
+    <div class="page-header">
+      <div class="page-header-left">
+        <h1>Logs — <span class="mono"><%= deployment.app_name %></span></h1>
+      </div>
+      <div class="page-header-actions">
+        <button class="sidebar-toggle" id="sidebarToggle" aria-label="Menu">☰</button>
+      </div>
+    </div>
+    <p style="margin-top:-14px;margin-bottom:16px">
+      Live console output for <%= bot ? bot.name : deployment.bot_slug %> — errors show up here as soon as they happen on the dyno.
+    </p>
+
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+      <span class="badge badge-pending" id="logStatusBadge">Connecting…</span>
+      <div class="btn-row" style="flex:0 0 auto">
+        <button class="btn btn-ghost" id="pauseBtn" type="button" style="min-width:auto;width:auto;padding:8px 14px">Pause</button>
+        <button class="btn btn-ghost" id="clearBtn" type="button" style="min-width:auto;width:auto;padding:8px 14px">Clear</button>
+        <button class="btn btn-ghost" id="downloadBtn" type="button" style="min-width:auto;width:auto;padding:8px 14px">Download</button>
+      </div>
+    </div>
+
+    <div class="console" id="logConsole" style="max-height:60vh;min-height:320px">
+      <div class="console-line"><span class="t">·</span><span class="msg">Fetching recent logs<span class="console-cursor"></span></span></div>
+    </div>
+
+    <a href="/my-bots" class="btn btn-secondary" style="max-width:160px;margin-top:20px">Back to My Bots</a>
+  </div>
+</div>
+<script>
+  window.LOG_DEPLOYMENT_ID = <%= deployment.id %>;
+  window.LOG_TOKEN = <%= JSON.stringify(logToken) %>;
+</script>
+<script src="/js/bot-logs.js"></script>
+<%- include('partials/foot') %>

@@ -1,0 +1,151 @@
+<%- include('partials/head') %>
+<div class="dashboard-container">
+  <%- include('partials/sidebar') %>
+  <div class="main-content">
+    <div class="page-header">
+      <div class="page-header-left">
+        <h1>Dashboard</h1>
+      </div>
+      <div class="page-header-actions">
+        <a href="/deploy" class="btn btn-primary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15" style="vertical-align:-2px;margin-right:5px"><path d="M12 5v14M5 12h14"/></svg>Deploy Bot
+        </a>
+        <button class="sidebar-toggle" id="sidebarToggle" aria-label="Menu">☰</button>
+      </div>
+    </div>
+
+    <% if (flash) { %>
+      <div class="alert alert-<%= flash.type %>"><%= flash.message %></div>
+    <% } %>
+
+    <div class="dash-hero">
+      <div class="dash-hero-left">
+        <div class="dash-avatar"><%= (user.username || user.email).charAt(0).toUpperCase() %></div>
+        <div>
+          <div class="dash-hero-eyebrow">Welcome back</div>
+          <div class="dash-hero-name"><%= user.username || user.email.split('@')[0] %></div>
+          <div class="dash-hero-badges">
+            <span class="role-badge level"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="12" height="12" style="vertical-align:-1px;margin-right:3px"><path d="M12 2l2.5 5 5.5.8-4 3.9.9 5.5-4.9-2.6-4.9 2.6.9-5.5-4-3.9 5.5-.8z"/></svg><%= level.name %></span>
+            <% if (user.is_admin) { %><span class="role-badge admin">Admin</span><% } %>
+            <% if (user.plan === 'premium') { %><span class="role-badge premium">Premium</span><% } %>
+          </div>
+        </div>
+      </div>
+      <div class="dash-balance">
+        <div class="label">JC balance</div>
+        <div class="value"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="20" height="20"><circle cx="12" cy="12" r="9"/><path d="M9.5 15.5c.5.6 1.4 1 2.5 1 1.7 0 3-.8 3-2s-1.3-1.7-3-2-3-.8-3-2 1.3-2 3-2c1.1 0 2 .4 2.5 1"/></svg><%= user.coins %></div>
+      </div>
+    </div>
+
+    <div class="dash-stat-grid">
+      <div class="dash-stat-card total"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18"><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M8 8V6a4 4 0 0 1 8 0v2"/><circle cx="9" cy="14" r="1"/><circle cx="15" cy="14" r="1"/></svg></div><div class="value"><%= stats.total %></div><div class="label">Total Bots</div></div>
+      <div class="dash-stat-card active"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg></div><div class="value"><%= stats.active %></div><div class="label">Active</div></div>
+      <div class="dash-stat-card inactive"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18"><rect x="7" y="5" width="3.2" height="14" rx="1"/><rect x="13.8" y="5" width="3.2" height="14" rx="1"/></svg></div><div class="value"><%= stats.inactive %></div><div class="label">Inactive</div></div>
+      <div class="dash-stat-card coins"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18"><circle cx="12" cy="12" r="9"/><path d="M9.5 15.5c.5.6 1.4 1 2.5 1 1.7 0 3-.8 3-2s-1.3-1.7-3-2-3-.8-3-2 1.3-2 3-2c1.1 0 2 .4 2.5 1"/></svg></div><div class="value"><%= user.coins %></div><div class="label">JC Balance</div></div>
+    </div>
+
+    <div class="dash-claim-card <%= claimWaitUntil ? '' : 'ready' %>" id="claimCard" data-wait-until="<%= claimWaitUntil || '' %>" data-claim-coins="<%= dailyClaimCoins %>">
+      <div class="dash-claim-left">
+        <div class="dash-claim-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="20" height="20"><rect x="3" y="8" width="18" height="13" rx="1.5"/><path d="M3 8h18M12 8v13M7.5 8a2.5 2.5 0 0 1 0-5C10 3 12 8 12 8s2-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg></div>
+        <div>
+          <h3>Daily coins</h3>
+          <p id="claimSub"><%- claimWaitUntil ? 'Next claim in <span id="claimCountdown" class="mono">--:--:--</span>' : `Claim +${dailyClaimCoins} JC — free, once a day.` %></p>
+        </div>
+      </div>
+      <form method="POST" action="/dashboard/claim">
+        <button type="submit" class="btn btn-primary" id="claimBtn" <%= claimWaitUntil ? 'disabled' : '' %>>
+          <%= claimWaitUntil ? 'Claimed' : `Claim ${dailyClaimCoins} JC` %>
+        </button>
+      </form>
+    </div>
+
+    <div class="dash-panel">
+      <div class="dash-panel-title"><span>Bot slots</span><span><%= slotsUsed %> / <%= slotsTotal %></span></div>
+      <div class="dash-slot-track"><div class="dash-slot-fill" style="width:<%= Math.min(100, (slotsUsed / slotsTotal) * 100) %>%"></div></div>
+    </div>
+
+    <% if (!deployments.length) { %>
+      <div class="empty-state">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" width="34" height="34"><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M8 8V6a4 4 0 0 1 8 0v2"/><circle cx="9" cy="14" r="1"/><circle cx="15" cy="14" r="1"/></svg></div>
+        <h3>No bots deployed yet</h3>
+        <p>Get started by deploying your first WhatsApp bot — it only takes a minute.</p>
+        <a href="/deploy" class="btn btn-primary" style="max-width:240px;margin:0 auto">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="15" height="15" style="vertical-align:-2px;margin-right:5px"><path d="M13 3 5 14h6l-1 7 8-11h-6z"/></svg>Deploy your first bot
+        </a>
+      </div>
+    <% } else { %>
+      <div class="dash-panel">
+        <div class="dash-panel-title"><span>Recent deployments</span><a href="/my-bots">Manage all →</a></div>
+        <% deployments.forEach(function(d) { %>
+          <div class="dash-deploy-item">
+            <div class="name-group">
+              <span class="dot <%= d.status %>"></span>
+              <div class="meta">
+                <span class="app-name"><%= d.app_name %></span>
+                <div class="bot-slug"><%= d.bot_slug %></div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+              <span class="badge badge-<%= d.status %>"><%= d.status %></span>
+              <a href="/deploy/status/<%= d.id %>" class="view-link">View</a>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
+
+    <div class="dash-referral">
+      <div class="dash-panel-title" style="margin-bottom:6px"><span>Referral program</span></div>
+      <p style="margin-bottom:0">Share your link — earn <strong style="color:var(--text)"><%= referralBonus %> JC</strong> for every sign-up, credited once they verify. You've referred <strong style="color:var(--text)"><%= referralCount %></strong> so far.</p>
+      <div class="dash-referral-row">
+        <span class="link-text" id="refLink"><%= referralLink %></span>
+        <button class="copy-btn" id="copyRefBtn" type="button">Copy</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  document.getElementById('copyRefBtn').addEventListener('click', function () {
+    var text = document.getElementById('refLink').textContent;
+    navigator.clipboard.writeText(text).then(function () {
+      var btn = document.getElementById('copyRefBtn');
+      var original = btn.textContent;
+      btn.textContent = 'Copied!';
+      setTimeout(function () { btn.textContent = original; }, 1500);
+    });
+  });
+
+  (function () {
+    var card = document.getElementById('claimCard');
+    var waitUntil = Number(card.getAttribute('data-wait-until'));
+    if (!waitUntil) return; // already claimable, nothing to count down
+
+    var countdownEl = document.getElementById('claimCountdown');
+    var btn = document.getElementById('claimBtn');
+    var claimCoins = card.getAttribute('data-claim-coins');
+
+    function tick() {
+      var msLeft = waitUntil - Date.now();
+      if (msLeft <= 0) {
+        // Cooldown's over — flip the card to "ready" without needing a reload.
+        clearInterval(interval);
+        card.classList.add('ready');
+        card.removeAttribute('data-wait-until');
+        document.getElementById('claimSub').textContent = 'Claim +' + claimCoins + ' JC — free, once a day.';
+        btn.disabled = false;
+        btn.textContent = 'Claim ' + claimCoins + ' JC';
+        return;
+      }
+      var totalSeconds = Math.floor(msLeft / 1000);
+      var h = Math.floor(totalSeconds / 3600);
+      var m = Math.floor((totalSeconds % 3600) / 60);
+      var s = totalSeconds % 60;
+      function pad(n) { return String(n).padStart(2, '0'); }
+      countdownEl.textContent = pad(h) + ':' + pad(m) + ':' + pad(s);
+    }
+
+    tick();
+    var interval = setInterval(tick, 1000);
+  })();
+</script>
+<%- include('partials/foot') %>

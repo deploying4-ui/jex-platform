@@ -1,0 +1,515 @@
+<%- include('partials/head') %>
+<style>
+  /* Home page extends the shared tokens in style.css — no new palette here. */
+
+  a { text-decoration: none; }
+
+  /* ── Public nav ─────────────────────────────────────── */
+
+  .home-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(12, 8, 32, 0.68);
+    backdrop-filter: blur(14px) saturate(140%);
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .home-nav-inner {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    justify-content: space-between;
+  }
+  .home-nav-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .home-nav-links { display: flex; align-items: center; gap: 28px; flex: 1; justify-content: center; }
+  .home-nav-links a { color: var(--text-dim); font-size: 14px; font-weight: 500; }
+  .home-nav-links a:hover { color: var(--text); }
+  .home-nav-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .home-nav-actions .btn { width: auto; padding: 9px 16px; font-size: 13.5px; }
+  .home-nav-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-size: 15px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .home-nav-inner .brand { flex-shrink: 0; }
+  .home-mobile-menu {
+    display: none;
+    flex-direction: column;
+    gap: 2px;
+    padding: 10px 20px 18px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .home-mobile-menu.open { display: flex; }
+  .home-mobile-menu a:not(.btn) {
+    color: var(--text-dim);
+    font-size: 14.5px;
+    font-weight: 500;
+    padding: 11px 4px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .home-mobile-menu a:not(.btn):last-of-type { border-bottom: none; }
+  .home-mobile-menu .btn { margin-top: 10px; width: 100%; }
+
+  @media (min-width: 861px) {
+    .home-nav-toggle { display: none; }
+  }
+  @media (max-width: 860px) {
+    .home-nav-links { display: none; }
+    .home-nav-brand-text {
+      font-size: 15px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 34vw;
+    }
+    .home-nav-actions { display: none; }
+  }
+
+  /* ── Hero ───────────────────────────────────────────── */
+
+  .home-hero-wrap { position: relative; overflow: hidden; }
+  .home-hero-bg {
+    position: absolute; inset: 0; z-index: 0;
+    opacity: 0.55; pointer-events: none;
+  }
+  .home-hero-bg path { fill: none; stroke-width: 1.4; }
+
+  .home-hero { position: relative; z-index: 1; max-width: 720px; margin: 0 auto; padding: 72px 20px 44px; text-align: center; }
+  .home-hero-pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 12.5px; color: var(--text-dim);
+    background: var(--bg-raised); border: 1px solid var(--border-soft);
+    padding: 7px 14px; border-radius: 99px; margin-bottom: 24px;
+  }
+  .home-hero-pill .pulse { width: 6px; height: 6px; border-radius: 50%; background: var(--cool); flex-shrink: 0; }
+  .home-hero h1 {
+    font-size: 2.5rem;
+    line-height: 1.18;
+    margin-bottom: 18px;
+  }
+  .home-hero h1 .rotate {
+    background: var(--accent-grad);
+    -webkit-background-clip: text; background-clip: text;
+    color: transparent; -webkit-text-fill-color: transparent;
+    display: inline-block; min-width: 1ch; transition: opacity 0.2s ease;
+  }
+  .home-hero p { font-size: 15.5px; max-width: 46ch; margin: 0 auto 30px; }
+  .home-hero-actions { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-bottom: 40px; }
+  .home-hero-actions .btn { width: auto; padding: 13px 24px; border-radius: 99px; }
+  .home-hero-actions .btn-secondary { border-radius: 99px; }
+
+  .home-hero-stats { display: flex; justify-content: center; gap: 48px; flex-wrap: wrap; }
+  .home-hero-stats .stat .value { font-family: var(--font-display); font-size: 1.6rem; font-weight: 600; }
+  .home-hero-stats .stat .label { font-size: 12.5px; color: var(--text-faint); margin-top: 2px; }
+
+  /* ── Sections ───────────────────────────────────────── */
+
+  .home-section { max-width: 1080px; margin: 0 auto; padding: 52px 20px; }
+  .home-section-head { max-width: 52ch; margin-bottom: 30px; }
+  .home-section-head h2 { font-size: 1.6rem; margin-bottom: 8px; }
+  .home-section-head p { font-size: 14px; margin: 0; }
+  .home-section-alt { background: var(--bg-raised); border-top: 1px solid var(--border-soft); border-bottom: 1px solid var(--border-soft); }
+
+  /* ── Features ───────────────────────────────────────── */
+
+  .home-features { display: grid; grid-template-columns: 1fr 1fr; gap: 0 44px; }
+  .home-feature { padding: 20px 0; border-bottom: 1px solid var(--border-soft); }
+  .home-feature h3 { font-size: 15px; margin-bottom: 5px; }
+  .home-feature p { font-size: 13.5px; margin: 0; }
+
+  /* ── Steps ──────────────────────────────────────────── */
+
+  .home-steps { max-width: 640px; }
+  .home-step { display: flex; gap: 18px; padding: 18px 0; border-bottom: 1px solid var(--border-soft); }
+  .home-step:last-child { border-bottom: none; }
+  .home-step .num { font-family: var(--font-display); font-weight: 700; background: var(--accent-grad); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; font-size: 20px; width: 32px; flex-shrink: 0; padding-top: 2px; }
+  .home-step h3 { font-size: 15px; margin-bottom: 4px; }
+  .home-step p { font-size: 13.5px; margin: 0; }
+
+  /* ── Bots ───────────────────────────────────────────── */
+
+  .home-bot-card { position: relative; }
+  .home-bot-card .bot-cost { position: absolute; top: 18px; right: 18px; margin: 0; }
+
+  /* ── CTA ────────────────────────────────────────────── */
+
+  .home-cta {
+    max-width: 1080px;
+    margin: 0 auto 60px;
+    padding: 40px 32px;
+    background:
+      linear-gradient(rgba(20, 15, 38, 0.88), rgba(20, 15, 38, 0.88)) padding-box,
+      var(--accent-grad) border-box;
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+    box-shadow: 0 20px 50px rgba(162, 86, 234, 0.18);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .home-cta h2 { font-size: 1.35rem; margin-bottom: 4px; }
+  .home-cta p { font-size: 13.5px; margin: 0; }
+  .home-cta .btn { width: auto; padding: 12px 22px; flex-shrink: 0; }
+
+  /* ── Footer ─────────────────────────────────────────── */
+
+  .home-footer { max-width: 1080px; margin: 0 auto; padding: 40px 20px 0; }
+  .home-footer-grid { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1.2fr; gap: 24px; padding-bottom: 30px; border-bottom: 1px solid var(--border-soft); }
+  .home-footer-grid h4 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-faint); margin-bottom: 14px; font-weight: 600; }
+  .home-footer-links { display: flex; flex-direction: column; gap: 10px; }
+  .home-footer-links a { color: var(--text-dim); font-size: 13.5px; }
+  .home-footer-links a:hover { color: var(--text); }
+  .home-footer-about p { font-size: 13.5px; max-width: 34ch; }
+
+  /* ── Motion: one entrance moment for the hero, nothing else ── */
+
+  .home-hero-pill, .home-hero h1, .home-hero p, .home-hero-actions, .home-hero-stats {
+    opacity: 0; animation: home-rise 0.5s ease-out forwards;
+  }
+  .home-hero h1 { animation-delay: 0.06s; }
+  .home-hero p { animation-delay: 0.12s; }
+  .home-hero-actions { animation-delay: 0.18s; }
+  .home-hero-stats { animation-delay: 0.24s; }
+  @keyframes home-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  @media (max-width: 860px) {
+    .home-hero h1 { font-size: 2rem; }
+    .home-hero-stats { gap: 30px; }
+    .home-features { grid-template-columns: 1fr; }
+    .card-grid { grid-template-columns: 1fr; }
+    .pricing-grid { grid-template-columns: 1fr; }
+    .home-footer-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+
+<div class="home-hero-wrap">
+  <svg class="home-hero-bg" viewBox="0 0 1080 640" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path d="M-50 420 C 200 360, 380 480, 560 400 S 900 320, 1130 380" stroke="var(--cool)" opacity="0.35"/>
+    <path d="M-50 470 C 220 520, 420 380, 640 460 S 940 440, 1130 500" stroke="var(--accent)" opacity="0.28"/>
+    <path d="M-50 540 C 260 500, 460 600, 700 540 S 980 560, 1130 600" stroke="var(--bot-3)" opacity="0.22"/>
+  </svg>
+
+  <!-- Public nav -->
+  <nav class="home-nav">
+    <div class="home-nav-inner">
+      <a href="/" class="brand"><img src="/images/logo.jpg" alt="<%= siteName %> logo" class="brand-mark-img"><span class="home-nav-brand-text"><%= siteName %><span class="dot">.</span></span></a>
+      <div class="home-nav-links">
+        <a href="#features">Features</a>
+        <a href="#how-it-works">How it works</a>
+        <a href="#bots">Bots</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#faq">FAQ</a>
+      </div>
+      <div class="home-nav-right">
+        <div class="home-nav-actions">
+          <a href="/login" class="btn btn-ghost btn-sm">Log in</a>
+          <a href="/register" class="btn btn-primary btn-sm">Sign up</a>
+        </div>
+        <button class="home-nav-toggle" id="homeNavToggle" aria-label="Menu" aria-expanded="false">☰</button>
+      </div>
+    </div>
+    <div class="home-mobile-menu" id="homeMobileMenu">
+      <a href="#features">Features</a>
+      <a href="#how-it-works">How it works</a>
+      <a href="#bots">Bots</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+      <a href="/login">Log in</a>
+      <a href="/register" class="btn btn-primary">Sign up</a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <header class="home-hero">
+    <div class="home-hero-pill">
+      <span class="pulse"></span>
+      <% if (stats.users > 0) { %>Trusted by <%= stats.users.toLocaleString() %>+ builders<% } else { %><%= bots.length %> WhatsApp bots ready to deploy<% } %>
+    </div>
+    <h1>Deploy your <span class="rotate" id="heroRotate"><%= bots.length ? bots[0].name : siteName %></span><br>in seconds</h1>
+    <p>
+      Pick a bot, paste your WhatsApp session, and <%= siteName %> builds and hosts it for you.
+      Coins cover the cost — no monthly seat, no server to manage.
+    </p>
+    <div class="home-hero-actions">
+      <a href="/register" class="btn btn-primary">Create free account →</a>
+      <a href="#how-it-works" class="btn btn-secondary">See how it works</a>
+    </div>
+    <div class="home-hero-stats">
+      <div class="stat"><div class="value" id="userCount" data-target="<%= stats.users %>">0</div><div class="label">Verified builders</div></div>
+      <div class="stat"><div class="value" id="botCount" data-target="<%= stats.activeDeployments %>">0</div><div class="label">Bots running now</div></div>
+      <div class="stat"><div class="value" id="catalogCount" data-target="<%= bots.length %>">0</div><div class="label">Bots in catalog</div></div>
+    </div>
+  </header>
+</div>
+
+<!-- Features -->
+<section id="features" class="home-section home-section-alt">
+  <div class="home-section-head">
+    <h2>Why builders use <%= siteName %></h2>
+    <p>Everything a bot needs to stay online, without the parts you'd rather not run yourself.</p>
+  </div>
+  <div class="card-grid">
+    <div class="info-card c1">
+      <div class="icon">⚡</div>
+      <h3>Instant deployment</h3>
+      <p>Paste your session ID and it's live in seconds — no server administration knowledge required.</p>
+    </div>
+    <div class="info-card c2">
+      <div class="icon">🪙</div>
+      <h3>Coin-based deploys</h3>
+      <p>Coins cover the deploy and its upkeep, not a monthly seat. Top up when you actually need to.</p>
+    </div>
+    <div class="info-card c3">
+      <div class="icon">🤝</div>
+      <h3>Referrals pay you back</h3>
+      <p>Invite a friend and you both earn bonus coins once they verify their account.</p>
+    </div>
+    <div class="info-card c4">
+      <div class="icon">🛡️</div>
+      <h3>Built for uptime</h3>
+      <p>We handle restarts, builds, and crashes on our infrastructure. If a bot goes down, it comes back.</p>
+    </div>
+    <div class="info-card c1">
+      <div class="icon">📊</div>
+      <h3>One dashboard</h3>
+      <p>Every bot you run, its status, and your coin balance — in a single place.</p>
+    </div>
+    <div class="info-card c2">
+      <div class="icon">💬</div>
+      <h3>Real support</h3>
+      <p>Questions or issues reach an actual person at <%= supportEmail %>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- How it works -->
+<section id="how-it-works" class="home-section">
+  <div class="home-section-head">
+    <h2>How it works</h2>
+    <p>Four steps between signing up and a bot that's actually running.</p>
+  </div>
+  <div class="home-steps">
+    <div class="home-step">
+      <div class="num">01</div>
+      <div><h3>Create an account</h3><p>Sign up free and verify your email in a few seconds.</p></div>
+    </div>
+    <div class="home-step">
+      <div class="num">02</div>
+      <div><h3>Get starter coins</h3><p>New accounts start with free coins, plus more from referrals.</p></div>
+    </div>
+    <div class="home-step">
+      <div class="num">03</div>
+      <div><h3>Deploy a bot</h3><p>Pick a bot, connect your session, and confirm the deploy in coins.</p></div>
+    </div>
+    <div class="home-step">
+      <div class="num">04</div>
+      <div><h3>Keep it running</h3><p>Track status, restarts, and coin balance from your dashboard.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- Available bots -->
+<section id="bots" class="home-section">
+  <div class="home-section-head">
+    <h2>Available bots (<%= bots.length %>)</h2>
+    <p>Each one deploys the same way — pick it, connect a session, done.</p>
+  </div>
+  <div class="bot-grid">
+    <% bots.forEach(function(bot) { %>
+    <a href="/register" class="bot-card home-bot-card">
+      <div class="bot-icon <%= bot.cssClass %>"><%= bot.initial %></div>
+      <h3><%= bot.name %></h3>
+      <p class="tagline"><%= bot.tagline %></p>
+      <span class="bot-cost">🪙 <%= bot.costCoins %> JC</span>
+    </a>
+    <% }) %>
+  </div>
+</section>
+
+<!-- Pricing -->
+<section id="pricing" class="home-section home-section-alt">
+  <div class="home-section-head">
+    <h2>Simple, coin-based pricing</h2>
+    <p>No subscriptions — pay in coins, earn coins daily and through referrals, top up only when you need to.</p>
+  </div>
+  <div class="pricing-grid">
+    <div class="price-card">
+      <span class="badge">Standard</span>
+      <h3>Free</h3>
+      <p class="tagline">What every account gets, no strings attached.</p>
+      <ul>
+        <li>Up to <%= settings.maxBotsPerUser %> bot slots</li>
+        <li><%= settings.deployCostCoins %> JC to deploy a bot</li>
+        <li><%= settings.renewalCostCoins %> JC every <%= settings.renewalPeriodHours %>h to keep it running</li>
+        <li><%= settings.dailyClaimCoins %> JC free every day</li>
+        <li><%= settings.referralBonusCoins %> JC for you and your friend, per referral</li>
+      </ul>
+      <a href="/register" class="btn btn-secondary">Create my account</a>
+    </div>
+    <div class="price-card featured">
+      <span class="badge">Premium</span>
+      <h3>Premium</h3>
+      <p class="tagline">More room to run, cheaper to keep running.</p>
+      <ul>
+        <li>Up to <%= settings.maxBotsPerUser + settings.premiumBonusSlots %> bot slots (+<%= settings.premiumBonusSlots %>)</li>
+        <li><%= settings.deployCostCoins %> JC to deploy a bot</li>
+        <li><%= settings.premiumRenewalCostCoins %> JC every <%= settings.renewalPeriodHours %>h — cheaper than standard</li>
+        <li><%= settings.dailyClaimCoins %> JC free every day</li>
+        <li><%= settings.referralBonusCoins %> JC for you and your friend, per referral</li>
+      </ul>
+      <a href="mailto:<%= supportEmail %>" class="btn btn-primary">Contact us to upgrade</a>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq" class="home-section">
+  <div class="home-section-head">
+    <h2>Frequently asked questions</h2>
+    <p>Got questions? Here's what people usually ask.</p>
+  </div>
+  <div style="max-width:720px">
+    <details class="faq-item" open>
+      <summary>What can I deploy on <%= siteName %>?</summary>
+      <p>WhatsApp bots from our catalog — <%= bots.map(function(b){ return b.name; }).join(', ') %>. Each one deploys the same way: pick it, paste your session, done.</p>
+    </details>
+    <details class="faq-item">
+      <summary>How does the coin system work?</summary>
+      <p>New accounts start with free coins. You can also claim <%= settings.dailyClaimCoins %> JC every <%= settings.dailyClaimPeriodHours %>h for free, and earn <%= settings.referralBonusCoins %> JC every time someone you refer verifies their account. Deploying costs <%= settings.deployCostCoins %> JC, and keeping a bot running costs <%= settings.renewalCostCoins %> JC every <%= settings.renewalPeriodHours %>h.</p>
+    </details>
+    <details class="faq-item">
+      <summary>What happens if my coins run out?</summary>
+      <p>Your bot is paused, not deleted. Top up or claim free coins, then restart it from My Bots whenever you're ready — nothing is lost.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Is there a free tier?</summary>
+      <p>Yes — every account starts with free coins, plus a daily free claim. You can run a bot without ever paying anything, as long as you keep it topped up through claims and referrals.</p>
+    </details>
+    <details class="faq-item">
+      <summary>What does Premium change?</summary>
+      <p>More bot slots and a cheaper renewal rate. Everything else — deploy cost, daily claim, referrals — stays the same.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Can I change my bot after deploying it?</summary>
+      <p>Yes. From My Bots you can update your session, restart, redeploy the latest code, stop, resume, or delete a bot at any time.</p>
+    </details>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="home-cta">
+  <div>
+    <h2>Your bot could be live in five minutes</h2>
+    <p>Free to sign up, starter coins included, no card required.</p>
+  </div>
+  <a href="/register" class="btn btn-primary">Create my account</a>
+</div>
+
+<!-- Footer -->
+<footer class="home-footer">
+  <div class="home-footer-grid">
+    <div class="home-footer-about">
+      <div class="brand" style="margin-bottom:12px"><img src="/images/logo.jpg" alt="<%= siteName %> logo" class="brand-mark-img"><%= siteName %><span class="dot">.</span></div>
+      <p>Deploy WhatsApp bots to hosted infrastructure in minutes — no server management required.</p>
+      <div class="social-row">
+        <a href="#" aria-label="WhatsApp" title="Add your link">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.6 6.32A8.86 8.86 0 0 0 12.05 4a8.94 8.94 0 0 0-7.75 13.4L3 21l3.7-1.28a8.9 8.9 0 0 0 4.36 1.12h.01c4.94 0 8.94-4 8.94-8.94a8.86 8.86 0 0 0-2.41-6.58zm-5.55 13.75h-.01a7.4 7.4 0 0 1-3.78-1.03l-.27-.16-2.8.98.93-2.73-.18-.28a7.43 7.43 0 0 1 6.11-11.5 7.36 7.36 0 0 1 7.36 7.38c0 4.08-3.32 7.34-7.36 7.34zm4.03-5.5c-.22-.11-1.3-.64-1.5-.71-.2-.08-.35-.11-.5.11s-.57.71-.7.86-.26.16-.48.05a6.1 6.1 0 0 1-1.79-1.1 6.7 6.7 0 0 1-1.24-1.54c-.13-.22 0-.34.1-.45.1-.1.22-.26.33-.39.11-.13.15-.22.22-.37a.4.4 0 0 0-.02-.38c-.05-.11-.5-1.2-.68-1.64-.18-.43-.36-.37-.5-.38h-.43a.82.82 0 0 0-.6.28 2.5 2.5 0 0 0-.78 1.86c0 1.1.8 2.16.91 2.31.11.15 1.57 2.4 3.8 3.36.53.23.95.37 1.27.47.53.17 1.02.14 1.4.09.43-.06 1.3-.53 1.48-1.04.18-.51.18-.94.13-1.03-.05-.09-.2-.15-.42-.26z"/></svg>
+        </a>
+        <a href="#" aria-label="Discord" title="Add your link">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.3 5.4A17.6 17.6 0 0 0 15.9 4l-.22.4a12.5 12.5 0 0 1 3.9 1.6 15.9 15.9 0 0 0-15.15 0 12.5 12.5 0 0 1 3.9-1.6L8.1 4a17.6 17.6 0 0 0-4.4 1.4C1.4 9.1.7 12.7 1.02 16.2a17.7 17.7 0 0 0 5.35 2.7l.7-1.14a11.4 11.4 0 0 1-1.8-.87c.15-.11.3-.23.44-.35a12.6 12.6 0 0 0 10.6 0c.14.12.29.24.44.35-.57.34-1.17.63-1.8.87l.7 1.14a17.6 17.6 0 0 0 5.35-2.7c.4-4.06-.67-7.62-2.7-10.8zM8.68 14.1c-.9 0-1.63-.83-1.63-1.85s.72-1.85 1.63-1.85 1.65.84 1.63 1.85c0 1.02-.72 1.85-1.63 1.85zm6.64 0c-.9 0-1.63-.83-1.63-1.85s.72-1.85 1.63-1.85 1.65.84 1.63 1.85c0 1.02-.72 1.85-1.63 1.85z"/></svg>
+        </a>
+        <a href="#" aria-label="GitHub" title="Add your link">
+          <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+        </a>
+      </div>
+    </div>
+    <div>
+      <h4>Product</h4>
+      <div class="home-footer-links">
+        <a href="#features">Features</a>
+        <a href="#bots">Bots</a>
+        <a href="#pricing">Pricing</a>
+        <a href="/register">Sign up</a>
+        <a href="/login">Dashboard</a>
+      </div>
+    </div>
+    <div>
+      <h4>Resources</h4>
+      <div class="home-footer-links">
+        <a href="#faq">FAQ</a>
+        <a href="mailto:<%= supportEmail %>">Support</a>
+        <% if (whatsappSupportUrl) { %><a href="<%= whatsappSupportUrl %>" target="_blank" rel="noopener">WhatsApp support</a><% } %>
+        <% if (tutorialUrl) { %><a href="<%= tutorialUrl %>" target="_blank" rel="noopener">Tutorial</a><% } %>
+      </div>
+    </div>
+    <div>
+      <h4>Legal</h4>
+      <div class="home-footer-links">
+        <a href="/terms">Terms of Service</a>
+        <a href="/privacy">Privacy Policy</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    var toggle = document.getElementById('homeNavToggle');
+    var menu = document.getElementById('homeMobileMenu');
+    if (toggle && menu) {
+      toggle.addEventListener('click', function () {
+        var open = menu.classList.toggle('open');
+        toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+    }
+
+    // Animated counters (real numbers rendered server-side via data-target)
+    function animateCounter(el, duration) {
+      var target = Number(el.getAttribute('data-target')) || 0;
+      var start = 0;
+      var t0 = null;
+      function step(ts) {
+        if (!t0) t0 = ts;
+        var progress = Math.min((ts - t0) / duration, 1);
+        el.textContent = Math.floor(start + (target - start) * progress).toLocaleString();
+        if (progress < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+    document.querySelectorAll('.home-hero-stats .value').forEach(function (el) {
+      animateCounter(el, 1200);
+    });
+
+    // Rotating bot name in the headline, cycling through the real catalog.
+    var botNames = [<% bots.forEach(function(bot, i) { %><%= i > 0 ? ',' : '' %><%- JSON.stringify(bot.name) %><% }) %>];
+    if (!botNames.length) botNames = ['<%= siteName %>'];
+    var rotateEl = document.getElementById('heroRotate');
+    var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (rotateEl && botNames.length > 1 && !reduceMotion) {
+      var idx = 0;
+      setInterval(function () {
+        idx = (idx + 1) % botNames.length;
+        rotateEl.style.opacity = 0;
+        setTimeout(function () {
+          rotateEl.textContent = botNames[idx];
+          rotateEl.style.opacity = 1;
+        }, 220);
+      }, 2400);
+    }
+  })();
+</script>
+<%- include('partials/foot') %>

@@ -1,0 +1,103 @@
+<%- include('partials/head') %>
+<div class="dashboard-container">
+  <%- include('partials/sidebar') %>
+  <div class="main-content">
+    <div class="page-header">
+      <div class="page-header-left">
+        <h1>All Users</h1>
+      </div>
+      <div class="page-header-actions">
+        <a href="/admin" class="btn btn-secondary">Single lookup</a>
+        <button class="sidebar-toggle" id="sidebarToggle" aria-label="Menu">☰</button>
+      </div>
+    </div>
+
+    <% if (flash) { %>
+      <div class="alert alert-<%= flash.type %>"><%= flash.message %></div>
+    <% } %>
+
+    <form method="GET" action="/admin/users" class="users-search-row">
+      <input type="text" name="q" placeholder="Search by email…" value="<%= search %>">
+      <button type="submit" class="btn btn-primary" style="width:auto;padding:10px 18px">Search</button>
+    </form>
+
+    <div class="users-meta"><%= total %> user<%= total === 1 ? '' : 's' %> total<%= search ? ` matching "${search}"` : '' %></div>
+
+    <div class="users-table-wrap">
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Role</th>
+            <th>JC</th>
+            <th>Bots</th>
+            <th>Referrals</th>
+            <th>Joined</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (!users.length) { %>
+          <tr><td colspan="7" style="text-align:center;color:var(--text-faint);padding:30px">No users found.</td></tr>
+          <% } %>
+          <% users.forEach(function(u) { %>
+          <tr>
+            <td>
+              <div class="email-cell">
+                <div class="mini-avatar"><%= u.email.charAt(0).toUpperCase() %></div>
+                <span><%= u.email %></span>
+              </div>
+            </td>
+            <td>
+              <div class="badge-row" style="margin:0">
+                <% if (u.is_admin) { %><span class="role-badge admin">Admin</span><% } %>
+                <% if (u.is_banned) { %><span class="role-badge" style="background:var(--danger-bg);color:var(--danger);border-color:rgba(255,92,114,0.3)">Banned</span><% } %>
+                <% if (u.plan === 'premium') { %><span class="role-badge premium">Premium</span><% } %>
+                <% if (!u.is_admin && u.plan !== 'premium' && !u.is_banned) { %><span class="role-badge">User</span><% } %>
+              </div>
+            </td>
+            <td class="mono"><%= u.coins %></td>
+            <td><%= u.active_deploy_count %> / <%= u.deploy_count %></td>
+            <td><%= u.referral_count %></td>
+            <td><%= new Date(Number(u.created_at)).toLocaleDateString() %></td>
+            <td>
+              <div class="row-actions">
+                <form method="POST" action="/admin/set-role">
+                  <input type="hidden" name="email" value="<%= u.email %>">
+                  <input type="hidden" name="role" value="<%= u.is_admin ? 'user' : 'admin' %>">
+                  <input type="hidden" name="from" value="users">
+                  <button type="submit" class="<%= u.is_admin ? 'danger' : '' %>"><%= u.is_admin ? 'Demote' : 'Promote' %></button>
+                </form>
+                <form method="POST" action="/admin/set-plan">
+                  <input type="hidden" name="email" value="<%= u.email %>">
+                  <input type="hidden" name="plan" value="<%= u.plan === 'premium' ? 'none' : 'premium' %>">
+                  <input type="hidden" name="from" value="users">
+                  <button type="submit" class="gold"><%= u.plan === 'premium' ? 'Unpremium' : 'Premium' %></button>
+                </form>
+                <a href="/admin?email=<%= encodeURIComponent(u.email) %>"><button type="button">View</button></a>
+                <% if (!u.is_admin) { %>
+                <form method="POST" action="/admin/set-ban">
+                  <input type="hidden" name="email" value="<%= u.email %>">
+                  <input type="hidden" name="banned" value="<%= u.is_banned ? 'false' : 'true' %>">
+                  <input type="hidden" name="from" value="users">
+                  <button type="submit" class="<%= u.is_banned ? '' : 'danger' %>"><%= u.is_banned ? 'Unban' : 'Ban' %></button>
+                </form>
+                <% } %>
+              </div>
+            </td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+
+    <% if (totalPages > 1) { %>
+    <div class="pagination">
+      <a class="<%= page <= 1 ? 'disabled' : '' %>" href="/admin/users?q=<%= encodeURIComponent(search) %>&page=<%= page - 1 %>">‹</a>
+      <span class="current"><%= page %> / <%= totalPages %></span>
+      <a class="<%= page >= totalPages ? 'disabled' : '' %>" href="/admin/users?q=<%= encodeURIComponent(search) %>&page=<%= page + 1 %>">›</a>
+    </div>
+    <% } %>
+  </div>
+</div>
+<%- include('partials/foot') %>

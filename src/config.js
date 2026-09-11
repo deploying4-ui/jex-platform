@@ -18,7 +18,7 @@ const env = process.env;
 // ── Primary values (edit these directly) ─────────────────
 const DEFAULTS = {
   PORT: 3000,
-  BASE_URL: 'https://jexhost-1.onrender.com',
+  BASE_URL: 'https://hostnest.jexp.top',
   SESSION_SECRET: 'd8773cd3f9659fa2e8422cf030e394107afd2d9a6a6e7a0d8a54c3137a46035a',
 
   SITE_NAME: 'Jexploit platform',

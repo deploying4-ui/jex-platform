@@ -74,16 +74,16 @@
     <div class="step-label">1. Pick an amount</div>
     <div class="package-grid" id="packageGrid">
       <div class="package-card" data-jc="100" data-price="1.2"><div class="amount">100 JC</div><div class="unit">$1.2</div><div class="expiry">lasts <%= smallExpiryDays %> days</div></div>
-      <div class="package-card popular" data-jc="200" data-price="2.4"><div class="amount">200 JC</div><div class="unit">$2.4</div><div class="expiry">lasts <%= smallExpiryDays %> days</div></div>
+      <div class="package-card popular" data-jc="250" data-price="2.4"><div class="amount">250 JC</div><div class="unit">$2.4</div><div class="expiry">lasts <%= smallExpiryDays %> days</div></div>
       <div class="package-card" data-jc="500" data-price="3.6"><div class="amount">500 JC</div><div class="unit">$3.6</div><div class="expiry">lasts <%= smallExpiryDays %> days</div></div>
-      <div class="package-card" data-jc="700" data-price="6"><div class="amount">700 JC</div><div class="unit">$6</div><div class="expiry">lasts <%= largeExpiryDays %> days</div></div>
-      <div class="package-card" data-jc="900" data-price="8"><div class="amount">900 JC</div><div class="unit">$8</div><div class="expiry">lasts <%= largeExpiryDays %> days</div></div>
+      <div class="package-card" data-jc="1500" data-price="6"><div class="amount">1500 JC</div><div class="unit">$6</div><div class="expiry">lasts <%= largeExpiryDays %> days</div></div>
+      <div class="package-card" data-jc="3000" data-price="12"><div class="amount">3000 JC</div><div class="unit">$12</div><div class="expiry">lasts <%= largeExpiryDays %> days</div></div>
     </div>
     <p style="font-size:12.5px;color:var(--text-faint);margin-top:-10px">Tap a package to select it, then follow the steps below. Coins are credited once we confirm your payment — see step 3.</p>
 
     <div class="step-label">2. Send payment</div>
     <div class="payment-card">
-      <strong><%= paymentLabel %></strong>
+      <strong><%= paymentLabel %></strong> <span class="badge badge-pending" style="margin-left:6px">Uganda only</span>
       <div class="payment-number">
         <span class="mono"><%= paymentNumber %></span>
         <button class="copy-btn" id="copyPayBtn" type="button">Copy</button>
@@ -92,6 +92,21 @@
         <li>Send your chosen amount to the number above via <%= paymentLabel %>.</li>
         <li>Keep the confirmation / transaction reference.</li>
       </ol>
+    </div>
+
+    <div class="payment-card" style="margin-top:14px">
+      <strong>MiniPay</strong> <span class="badge badge-succeeded" style="margin-left:6px">All other countries</span>
+      <div class="payment-number">
+        <span class="mono"><%= minipayNumber %></span>
+        <button class="copy-btn" id="copyMinipayBtn" type="button">Copy</button>
+      </div>
+      <ol class="pay-steps">
+        <li>Download the MiniPay app from the Google Play Store.</li>
+        <li>Register and verify your account with your phone number.</li>
+        <li>Add funds to your MiniPay wallet.</li>
+        <li>Send your chosen amount to the number above.</li>
+      </ol>
+      <a href="<%= minipayAppUrl %>" target="_blank" rel="noopener" class="btn btn-secondary" style="max-width:220px;margin-top:4px">↗ Download MiniPay</a>
     </div>
 
     <div class="step-label" style="margin-top:24px">3. Submit payment proof</div>
@@ -166,6 +181,17 @@
           var original = copyBtn.textContent;
           copyBtn.textContent = 'Copied!';
           setTimeout(function () { copyBtn.textContent = original; }, 1500);
+        });
+      });
+    }
+
+    var copyMinipayBtn = document.getElementById('copyMinipayBtn');
+    if (copyMinipayBtn) {
+      copyMinipayBtn.addEventListener('click', function () {
+        navigator.clipboard.writeText(<%- JSON.stringify(minipayNumber || '') %>).then(function () {
+          var original = copyMinipayBtn.textContent;
+          copyMinipayBtn.textContent = 'Copied!';
+          setTimeout(function () { copyMinipayBtn.textContent = original; }, 1500);
         });
       });
     }

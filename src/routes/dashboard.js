@@ -72,6 +72,8 @@ router.get('/topup', requireAuth, (req, res) => {
     packages: config.coinPackages,
     paymentLabel: config.payments.methodLabel,
     paymentNumber: config.payments.number,
+    minipayNumber: config.payments.minipayNumber,
+    minipayAppUrl: config.payments.minipayAppUrl,
     supportEmail: config.payments.supportEmail,
     smallExpiryDays: s.smallPackageExpiryDays,
     largeExpiryDays: s.largePackageExpiryDays,
